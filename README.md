@@ -1,6 +1,6 @@
 # Room 12
 
-Test push
+An ergonomic site to help users find vaccination sites and leave thoughful reviews.
 
 ## Members
 
