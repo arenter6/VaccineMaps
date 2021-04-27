@@ -2,9 +2,12 @@
 
 Test push
 
-##Members
+## Members
 
 Alfredo Renteria
+
 Colin Xie
+
 Joey Barcia
+
 David Pang
