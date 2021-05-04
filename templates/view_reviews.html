@@ -1,0 +1,29 @@
+[[extend 'layout.html']]
+
+<div class="section">
+    <h1 class="title">Vaccine Reviews</h1>
+    <!-Feel free to add a data visualization thing here. Could be made using vue charts or something->
+    <div class="block">
+        <table class="table is-striped is-fullwidth">
+            <tr>
+                <th>Vaccine Type</th>
+                <th>Vaccination Site</th>
+                <th>Rating</th>
+                <th>Feedback</th>
+                <th>Day Reported</th>
+            </tr>
+            [[for row in review_info:]]
+            <tr>
+                <td>[[=row["vaccine_type"] ]]</td>
+                <td>[[=row["site_address"] ]]</td>
+                <td>[[=row["rating"] ]]</td>
+                <td>[[=row["feedback"] ]]</td>
+                <td>[[=row["submitted_time"] ]] </td>
+            </tr>
+            [[pass]]
+        </table>
+    </div>
+    <a class="button is-primary" href="[[=URL('experience')]]">
+      <span>Back</span>
+    </a>
+</div>
