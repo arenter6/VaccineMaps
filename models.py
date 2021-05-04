@@ -27,7 +27,6 @@ VACCINES = {
 ##Table for reviews
 db.define_table(
     'review',
-    #Field('user_email', default=get_user_email),
     Field('users_id', db.auth_user, default=auth.user_id),
     Field('vaccine_type', requires=IS_IN_SET(VACCINES), error_message=T("Please choose from the list above.")),
     Field('rating', requires=IS_FLOAT_IN_RANGE(0, 5), error_message=T("Please enter a rating between 0 and 5.")),

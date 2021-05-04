@@ -135,3 +135,17 @@ success!
 success!
 success!
 success!
+success!
+success!
+success!
+timestamp: 2021-05-04T09:25:34.258747
+CREATE TABLE "review"(
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "users_id" INTEGER REFERENCES "auth_user" ("id") ON DELETE CASCADE  ,
+    "vaccine_type" CHAR(512),
+    "rating" CHAR(512),
+    "site_address" CHAR(512),
+    "zip_code" CHAR(512),
+    "feedback" CHAR(512),
+    "submitted_time" CHAR(512)
+);
