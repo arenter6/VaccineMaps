@@ -1,0 +1,33 @@
+// @import "../node_modules/sass/utilities/initial-variables";
+// @import "../node_modules/sass/utilities/functions";
+
+//Set our project colors
+
+$primary: #000000;
+$headercolor: #30475e;
+$header-invert: findColorInvert($headercolor);
+
+.flex-wrapper {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+  justify-content: space-between;
+}
+// 5. Add new color variables to the color map.
+// @import "../sass/utilities/derived-variables";
+// $addColors: (
+//   "headercolor":($headercolor, $header-invert),
+// );
+// $colors: map-merge($colors, $addColors);
+
+// 6. Import the rest of Bulma
+@import "../../../node_modules/bulma";
+// @import "../../../node_modules/bulma/sass/utilities/_all.sass";
+// @import "../../../node_modules/bulma/sass/base/_all.sass";
+// @import "../../../node_modules/bulma/sass/elements/button.sass";
+// @import "../../../node_modules/bulma/sass/elements/container.sass";
+// @import "../../../node_modules/bulma/sass/elements/title.sass";
+// @import "../../../node_modules/bulma/sass/form/_all.sass";
+// @import "../../../node_modules/bulma/sass/components/navbar.sass";
+// @import "../../../node_modules/bulma/sass/layout/hero.sass";
+// @import "../../../node_modules/bulma/sass/layout/section.sass";
