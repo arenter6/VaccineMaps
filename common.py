@@ -13,6 +13,7 @@ from py4web.utils.downloader import downloader
 from py4web.utils.tags import Tags
 from py4web.utils.factories import ActionFactory
 from py4web.utils.form import FormStyleBulma
+from pydal.validators import * #
 from . import settings
 
 # #######################################################
@@ -109,7 +110,8 @@ auth.param.login_expiration_time = 3600
 auth.param.password_complexity = {"entropy": 2}
 auth.param.block_previous_password_num = 3
 auth.param.formstyle = FormStyleBulma
-auth.define_tables()
+auth.define_tables(
+)
 
 # #######################################################
 # Configure email sender for auth

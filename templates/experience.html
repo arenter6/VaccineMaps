@@ -1,0 +1,49 @@
+[[extend 'layout.html']]
+
+<div class="section">
+    <h1 class="title">Vaccine Experience</h1>
+   [[if logged_in % 2==1:]]
+      <h2 class="subtitle">Reviews submitted by [[=user["first_name"] ]] [[=user["last_name"] ]]</h2>
+      <table class="table is-striped is-fullwidth">
+      <tr>
+        <th>Vaccine Type</th>
+        <th>Vaccination Site</th>
+        <th>Rating</th>
+        <th>Feedback</th>
+        <th>Day Reported</th>
+        <th>Edit</th>
+        <tH>Delete</tH>
+      </tr>
+      [[for row in review_info:]]
+      <!-Ideally Users should have no more than 2, but could probably build off this and use for view reviews->
+      <tr>
+          <td>[[=row["vaccine_type"] ]]</td>
+          <td>[[=row["site_address"] ]]</td>
+          <td>[[=row["rating"] ]]</td>
+          <td>[[=row["feedback"] ]]</td>
+          <td>[[=row["submitted_time"] ]]</td>
+          <td>
+            <a class="button is-warning" href="[[=URL('edit_review', row["id"] , signer=url_signer)]]">
+               <i class="fa fa-fw fa-edit"></i>
+            </a>
+          </td>
+          <td>
+            <a class="button is-danger" href="[[=URL('delete_review', row["id"] , signer=url_signer)]]">
+               <i class="fa fa-fw fa-trash"></i>
+            </a>
+          </td>
+      </tr>
+      [[pass]]
+   </table>
+   [[else:]]
+   [[pass]]
+    <a class="button is-primary" href="[[=URL('index')]]">
+      <span>Back</span>
+   </a>
+    <a class="button is-primary" href="[[=URL('submit_review')]]">
+      <span>Submit Review</span>
+    </a>
+    <a class="button is-primary" href="[[=URL('view_reviews')]]">
+      <span>View Reviews</span>
+    </a>
+</div>
