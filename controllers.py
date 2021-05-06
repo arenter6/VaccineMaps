@@ -32,6 +32,7 @@ from py4web.utils.url_signer import URLSigner
 from .models import get_user_email
 from py4web.utils.form import Form, FormStyleBulma
 from pydal.validators import *
+from .settings_private import *
 
 url_signer = URLSigner(session)
 vaccines = {
@@ -111,3 +112,10 @@ def view_reviews():
     return dict(review_info=review_info)
 
 #######Experience ends
+
+
+#######Test Map using OpenStreetMaps
+@action('test_map')
+@action.uses(db, session, auth, 'test_map.html')
+def view_reviews():
+    return dict(API_KEY=API_KEY, USER_ID=USER_ID)
