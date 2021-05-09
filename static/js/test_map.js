@@ -37,7 +37,10 @@ let init = (app) => {
         zipcode: "",
         geoJson: null,
         map_layer: null,
-        range: 10,
+        range: {
+            number: '25'
+            
+        },
         //Vaccine types (not likely)
     };
 
@@ -118,7 +121,7 @@ let init = (app) => {
     app.vue = new Vue({
         el : "#vue-target",
         data: app.data,
-        methods: app.methods
+        methods: app.methods,
     });
 
     app.init = () => {
