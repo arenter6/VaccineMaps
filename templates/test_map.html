@@ -2,46 +2,48 @@
 
 <div class="section" id="vue-target">
     <!-- Put the table here -->
-    <div class="column">
-        
-        <!-- Field for zip codes - search param. -->
-        <div class="field">
-            <label class="label">5-digit Zip Code</label>
-            <div class="control">
-                <input type="text" placeholder="Zip Code" v-model="zipcode" class="input">
+    <div class="columns">
+        <div class="column">
+            <!-- Field for zip codes - search param. -->
+            <div class="field">
+                <label class="label">5-digit Zip Code</label>
+                <div class="control">
+                    <input type="text" placeholder="Zip Code" v-model="zipcode" class="input">
+                </div>
             </div>
-        </div>
-        <!-- Drop down for mile range - search param. -->
-        <div class="field">
-            <label class="label">Search Radius</label>
-            <div class="control">
-                <!-- Single-select drop down menu for search radius in miles -->
-                <select v-model="range">
-                    <!-- ***** NOTE: The following 2 lines are Vue's recommendation for
-                               adding single-select drop-down menu options. 
-                               However, in 'app.data' - test_map.js, we default to 25 miles,
-                               therefore, user doesn't have option to not select a mile range -->
-                    <!-- Recommended by vue to prevent rendering 'unselected' states -->
-                    <!-- <option disabled value="">Please select one</option> -->
+            <!-- Drop down for mile range - search param. -->
+            <div class="field">
+                <label class="label">Search Radius</label>
+                <div class="control">
+                    <!-- Single-select drop down menu for search radius in miles -->
+                    <select v-model="range">
+                        <!-- ***** NOTE: The following 2 lines are Vue's recommendation for
+                                adding single-select drop-down menu options. 
+                                However, in 'app.data' - test_map.js, we default to 10 miles,
+                                therefore, user doesn't have option to not select a mile range -->
+                        <!-- Recommended by vue to prevent rendering 'unselected' states -->
+                        <!-- <option disabled value="">Please select one</option> -->
 
-                    <!-- ':value"{}"' -- inline object literal -->
-                    <!-- strings are bound to number int -->
-                    <option :value="{ number: 1 }">1 mile</option>
-                    <option :value="{ number: 5 }">5 miles</option>
-                    <option :value="{ number: 10 }">10 miles</option>
-                    <option :value="{ number: 25 }">25 miles</option>
-                    <option :value="{ number: 50 }">50 miles</option>
-                </select>
+                        <!-- ':value"{}"' -- inline object literal -->
+                        <!-- strings are bound to number int -->
+                        <option :value="{ number: 1 }">1 mile</option>
+                        <option :value="{ number: 5 }">5 miles</option>
+                        <option :value="{ number: 10 }">10 miles</option>
+                        <option :value="{ number: 25 }">25 miles</option>
+                        <option :value="{ number: 50 }">50 miles</option>
+                    </select>
+                </div>
             </div>
-        </div>
-        <!-- Uncomment line below to see/confirm default range value -->
-        <!-- <pre>Selected (default) range: {{ range }}</pre> -->
+            <!-- Uncomment line below to see/confirm default range value -->
+            <!-- <pre>Selected (default) range: {{ range }}</pre> -->
 
-        <input type="submit" @click="search" value="Search" class="button">
+            <input type="submit" @click="search" value="Search" class="button">
+        </div>
+        <div class="column">
+            <!-- This is the map -- imports settings from #mapid -->
+            <div id="mapid"></div>
+        </div>
     </div>
-    
-    <!-- This is the map -- imports settings from #mapid -->
-    <div id="mapid"></div>
 </div>
 
 [[block page head]]
@@ -55,7 +57,6 @@
     <script src="js/vue.js"></script>
     <script src="js/axios.js"></script>
 
-
     <style>
         #mapid {
          height: 700px;
@@ -63,6 +64,7 @@
     </style>
     <script>let api_key = "[[=API_KEY]]"; let user_id = "[[=USER_ID]]"</script>
     <script src="js/test_map.js"></script>
+
 [[end]]
 
 

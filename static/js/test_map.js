@@ -37,9 +37,9 @@ let init = (app) => {
         zipcode: "",
         geoJson: null,
         map_layer: null,
-        range: {
-            number: '25'
-            
+        //range: 10,
+        range: { // Default search radius is 10 miles
+            number: 10,
         },
         //Vaccine types (not likely)
     };
@@ -48,11 +48,8 @@ let init = (app) => {
         app.vue.zipcode = "";
     };
 
-
-
-
-
     app.search = function() {
+        
         let request_city = "https://secure.shippingapis.com/ShippingAPI.dll?API=CityStateLookup&XML=<CityStateLookupRequest USERID=\"";
         request_city += user_id + "\"><ZipCode ID='0'><Zip5>";
         request_city += app.vue.zipcode + "</Zip5></ZipCode></CityStateLookupRequest>";
@@ -77,7 +74,7 @@ let init = (app) => {
 
                 //var lng_float = Math.abs(parseFloat(lng), map.getBounds().getEast());
                 //console.log(lng_float);
-                var distance = app.vue.range*1600; //Converts miles from range input to meters
+                var distance = app.vue.range.number*1600; //Converts miles from range input to meters
                 console.log("The radius is " + distance + " meters");
                 axios.get("https://www.vaccinespotter.org/api/v0/states/" + app.vue.state + ".json").then(function(response) {
                     let data = response.data;
@@ -121,7 +118,7 @@ let init = (app) => {
     app.vue = new Vue({
         el : "#vue-target",
         data: app.data,
-        methods: app.methods,
+        methods: app.methods
     });
 
     app.init = () => {
@@ -143,7 +140,9 @@ L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_toke
     accessToken: api_key
 }).addTo(map);
 
-var marker = L.marker([36.9881, -122.0582]).addTo(map);
+// Commented out the marker for UCSC, since we only want markers for Vaccine Locations
+// Unless we start with the marker, then clear it in the search.
+var marker; //= L.marker([36.9881, -122.0582]).addTo(map);
 marker.bindPopup("<b>University of California Santa Cruz</b><br>Sorry but it takes a long time to load big states");
 
 
