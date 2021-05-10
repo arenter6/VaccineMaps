@@ -1,17 +1,27 @@
 [[extend 'layout.html']]
 
 <div class="section" id="vue-target">
-   <!-- Put the table here -->
-  <div class="column">
-      <div class="field">
-              <div class="control">
-                   <input type="text" placeholder="Enter a Zipcode" v-model="zipcode" class="input">
-                  <input type="text" placeholder="Enter a Range in miles (1-50)" v-model="range" class="input">
-                   <input type="submit" @click="search" value="Search" class="button">
-              </div>
-      </div>
-  </div>
-  <div id="mapid"></div>
+<!-- Put the table here -->
+    <div class="field">
+        <label class="label">Zipcode</label>
+        <div class="control">
+            <input type="text" placeholder="Enter a Zipcode" v-model="zipcode" class="input">
+
+        </div>
+    </div>
+    <div class="field">
+        <label class="label">Range</label>
+        <div class="control">
+            <input type="text" placeholder="Enter a Range in Miles (0-50)" v-model="range" class="input">
+
+        </div>
+    </div>
+    <div class="field">
+        <div class="control">
+            <input type="submit" @click="search" value="Search" class="button">
+        </div>
+    </div>
+    <div id="mapid"></div>
 </div>
 
 [[block page head]]
