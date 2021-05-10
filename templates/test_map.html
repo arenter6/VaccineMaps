@@ -1,5 +1,13 @@
 [[extend 'layout.html']]
 
+<!-- page_head customizess header for this page-->
+[[block page_head]]
+<!-- The stylesheet below is for (hosting) Leaflet 1.7.1 w/ subresource integrity enabled -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" 
+    integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" 
+    crossorigin=""/>
+[[end]]
+
 <div class="section" id="vue-target">
     <!-- Put the table here -->
     <div class="columns">
@@ -36,35 +44,36 @@
             </div>
             <!-- Uncomment line below to see/confirm default range value -->
             <!-- <pre>Selected (default) range: {{ range }}</pre> -->
-
-            <input type="submit" @click="search" value="Search" class="button">
-        </div>
+            <div class="field">
+                <div class="control">
+                    <input type="submit" @click="search" value="Search" class="button">
+                </div>
+            </div>
+        </div> <!-- end column -->
         <div class="column">
             <!-- This is the map -- imports settings from #mapid -->
             <div id="mapid"></div>
         </div>
-    </div>
+    </div> <!-- end columns -->
 </div>
 
-[[block page head]]
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
-     integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
-     crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
-     integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
-     crossorigin=""></script>
-    <script src="https://code.jquery.com/jquery-3.5.0.js"></script>
-    <script src="js/vue.js"></script>
-    <script src="js/axios.js"></script>
-
-    <style>
-        #mapid {
-         height: 700px;
-        }
-    </style>
-    <script>let api_key = "[[=API_KEY]]"; let user_id = "[[=USER_ID]]"</script>
-    <script src="js/test_map.js"></script>
-
+<!-- page_scripts block adds scripts to page-->
+[[block page_scripts]]
+<!-- The script below is for (hosting) Leaflet 1.7.1 w/ subresource integrity enabled -->
+<!-- For more info. see Leaflet docs: https://leafletjs.com/download.html -->
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" 
+    integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" 
+    crossorigin=""></script>
+<script src="https://code.jquery.com/jquery-3.5.0.js"></script>
+<script src="js/vue.js"></script>
+<script src="js/axios.js"></script>
+<style>
+    #mapid {
+        height: 700px;
+    }
+</style>
+<!-- API requirements forwarded from (settings.py -> controllers.py) to deliver to .js file -->
+<!-- api_key: for mapbox API usage; user_id: for USPS API City/State Lookup Web Tool -->
+<script>let api_key = "[[=API_KEY]]"; let user_id = "[[=USER_ID]]"</script>
+<script src="js/test_map.js"></script>
 [[end]]
-
-
