@@ -53,7 +53,7 @@
                 <tbody>
                     <tr v-for="r in rows">
                         <td>{{r.provider}}</td>
-                        <td><a target='_blank' href='https://www.google.com/maps/place/{{r.address}}'> {{r.address}} </a></td>
+                        <td><a target='_blank' :href="r.addressLink"> {{r.address}} </a></td>
                         <td>{{r.city}}</td>
                         <td>{{r.distance}}</td>
                         <td>{{r.availability}}</td>

@@ -10,6 +10,7 @@
     //When click on a marker, it highlights its respective row on the table
         //when click off, unhighlights
     //Check to see if range is valid (0-100) also add slider (css sass)
+    //Slider
 
 
 //TODO Corner cases!!
@@ -20,7 +21,7 @@
     //Make sure range is non negative and zipcode is between 500 and 99500
         //Make either an v-if statement or form validator
     //Bug where if the state is small, will only display that state's locations  <-- Import entire US instead of state, problem -> may cost more time to run
-
+    //Make sure zipcode lookup goes to USA
 
 //TODO code cleanup
 
@@ -34,6 +35,8 @@
     //make it sortable (provider, distance, availability)
     //make it default sort by distance and availability
     //when click on a row, opens respective popup on map <-- probably uses database
+
+//TODO Comments
 
 
 //Vue stuff here
@@ -131,14 +134,18 @@ let init = (app) => {
                             let theCity = feature.properties.city.charAt(0) + feature.properties.city.substring(1).toLowerCase();
                             let theAddress = toTitleCase(feature.properties.address);
                             //var addressSearch = "<a href='https://www.google.com/maps/place/'" + theAddress + ">" + theAddress + "</a>";
+                            var addressSearch = theAddress.split(' ').join('+');
+                            addressSearch = "https://www.google.com/maps/place/" + addressSearch;
                             app.vue.rows.push({
                                 provider: feature.properties.provider_brand_name,
                                 address: theAddress,
+                                addressLink: addressSearch,
                                 city: toTitleCase(theCity),
                                 zipcode: feature.properties.postal_code,
                                 distance: distanceToInput,
                                 availability: available,
                             });
+                            console.log(addressSearch);
                             app.vue.rows.sort(function(a, b) {
                                 let distanceA = a.distance;
                                 let distanceB = b.distance;
@@ -181,7 +188,6 @@ let init = (app) => {
             });
         });
     };
-
 
     app.methods = {
         clear_search: app.clear_search,
@@ -271,5 +277,5 @@ function toTitleCase(str) { //Changes a string to capitalize every word's first 
 
 // Commented out the marker for UCSC, since we only want markers for Vaccine Locations
 // Unless we start with the marker, then clear it in the search.
-var marker = L.marker([36.9881, -122.0582]).addTo(map);
+var marker = L.marker([36.9881, -122.0582]).addTo(map); //Starting location
 marker.bindPopup("<b>University of California Santa Cruz</b>");
