@@ -117,5 +117,5 @@ def view_reviews():
 #######Test Map using OpenStreetMaps
 @action('test_map')
 @action.uses(db, session, auth, 'test_map.html')
-def view_reviews():
+def test_map():
     return dict(API_KEY=API_KEY, USER_ID=USER_ID)

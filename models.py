@@ -36,6 +36,16 @@ db.define_table(
     Field('submitted_time', default=get_time),
 )
 
+db.define_table(
+    'site',
+    Field('provider'),
+    Field('address'),
+    Field('city'),
+    Field('zipcode'),
+    Field('distance'),
+    Field('availability'),
+)
+
 
 #db.user.id.readable = False
 #db.user.user_email.readable = db.user.user_email.writable = False
