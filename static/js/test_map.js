@@ -45,6 +45,7 @@ let app = {};
 let init = (app) => {
     app.data = {
         search_location: null,
+        city: "Santa Cruz", //by default it is Santa Cruz
         state: "CA", //by Default it is california
         zipcode: null,
         geoJson: null,
@@ -95,48 +96,46 @@ let init = (app) => {
             app.vue.rows = [];
             app.vue.geoJson.clearLayers();
         }
-        // Parse USPS City/State Lookup request
-        axios.get(request_city).then(function(response) {
+
+        axios.get(request_city).then(function(response) { // Requests information using zipcode and returns state, city
             console.log(response);
             var xml = $.parseXML(response.data),
                       $xml = $( xml ),
-                      $state = $xml.find('State');
-            // Assign U.S. state variable
-            app.vue.state = $state.text();
+                      $state = $xml.find('State'),
+                      $city = $xml.find('City');
+            app.vue.state = $state.text(); // Assign U.S. state variable
+            app.vue.city = $city.text(); // Assign city variable
             console.log(app.vue.state);
+            console.log(app.vue.city);
             // Process GET request from openstreetmap.org using Zip code and U.S. state
-            axios.get("https://nominatim.openstreetmap.org/search?format=json&limit=3&q="+app.vue.zipcode+"+"+app.vue.state).then(function(result) {
+            axios.get("https://nominatim.openstreetmap.org/search?format=json&limit=3&q="+app.vue.zipcode+"+"+app.vue.city+"+"+app.vue.state + "+us").then(function(result) {
                 var coord = result.data;
                 console.log(coord);
                 // request will fill latitude and longitude variables
                 var lat = coord[0]['lat'];
                 var lng = coord[0]['lon'];
-                // Use flyTo() to smoothly interpolate between locations
-                // Params.: center: [lat, lng] - where lat, lng are numbers; centers map position
-                // zoom: number - zoom level set to 13 when searches are conducted
-                map.flyTo([lat, lng], 13);
+                map.flyTo([lat, lng], 13); //Moves to searched location
                 var distance = app.vue.range.number*1600; //Converts miles from range input to meters
                 console.log("The radius is " + distance + " meters");
-                //may want to use USA instead of state in case of zip codes on edge
-                axios.get("https://www.vaccinespotter.org/api/v0/states/" + app.vue.state + ".json").then(function(response) {
+                //may want to use USA instead of state in case of zip codes on edge but results in slower response time (noticeable lag)
+                axios.get("https://www.vaccinespotter.org/api/v0/states/" + app.vue.state + ".json").then(function(response) { //Gets searched states vaccination data
                 //axios.get("https://www.vaccinespotter.org/api/v0/US.json").then(function(response) {
                     let data = response.data;
                     console.log("Successfully loaded data");
                     console.log(data);
-                    app.vue.geoJson = L.geoJson(data,
+                    app.vue.geoJson = L.geoJson(data, // From the json request, we parse information according to our needs and display onto the map
                     {
-                        onEachFeature: function(feature, layer) {
-                            var distanceToInput = roundToTwo((L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([lat,lng])))/1600);
-                            var available = "No";
+                        onEachFeature: function(feature, layer) { //For every location, we set the appropriate information to rows so html can iterate nicely
+                            let distanceToInput = roundToTwo((L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([lat,lng])))/1600);
+                            let available = "No";
                             if(feature.properties.appointments_available) {
                                 available = "Yes";
                             }
                             let theCity = feature.properties.city.charAt(0) + feature.properties.city.substring(1).toLowerCase();
                             let theAddress = toTitleCase(feature.properties.address);
-                            //var addressSearch = "<a href='https://www.google.com/maps/place/'" + theAddress + ">" + theAddress + "</a>";
-                            var addressSearch = theAddress.split(' ').join('+');
-                            addressSearch = "https://www.google.com/maps/place/" + addressSearch;
-                            app.vue.rows.push({
+                            let addressSearch = theAddress.split(' ').join('+');
+                            addressSearch = "https://www.google.com/maps/place/" + addressSearch + "+" + theCity;
+                            app.vue.rows.push({ //Adds location to array
                                 provider: feature.properties.provider_brand_name,
                                 address: theAddress,
                                 addressLink: addressSearch,
@@ -145,8 +144,7 @@ let init = (app) => {
                                 distance: distanceToInput,
                                 availability: available,
                             });
-                            console.log(addressSearch);
-                            app.vue.rows.sort(function(a, b) {
+                            app.vue.rows.sort(function(a, b) { //Sorts the locations by increasing distance to input
                                 let distanceA = a.distance;
                                 let distanceB = b.distance;
                                 if (distanceA < distanceB) {
@@ -158,15 +156,15 @@ let init = (app) => {
                             });
                             app.vue.page_initialized = true;
                         },
-                        pointToLayer: availabilityIcon,
-                        filter: function(feature, layer) {
+                        pointToLayer: availabilityIcon, // Sets icon for every location
+                        filter: function(feature, layer) { // Filters out locations that are not within distance
                             if(L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([lat,lng])) <= distance) {
                                 return true;
                             } else {
                                 return false;
                             }
                         }
-                    }).bindPopup(function (layer) {
+                    }).bindPopup(function (layer) { //Sets popup for every location
                         var distanceToInput = roundToTwo((L.latLng(layer.feature.geometry.coordinates[1], layer.feature.geometry.coordinates[0]).distanceTo(L.latLng([lat,lng])))/1600);
                         var popup = "<b>" + layer.feature.properties.name + "</b>"
                                + "<h2>" + "Provider: " + layer.feature.properties.provider_brand_name + "</h2>"
@@ -208,36 +206,22 @@ let init = (app) => {
 
 init(app);
 
-// setView(); position map, to UCSC Campus w/ zoom level 13 when Map initiates
+// Creates instance of map and sets default view to UCSC Campus w/ zoom level 13
 var map = L.map('mapid').setView([36.9881, -122.0582], 13);
 
-// Mapbox Static Tiles API
-// https://docs.mapbox.com/help/troubleshooting/migrate-legacy-static-tiles-api/
-// https://docs.mapbox.com/api/maps/static-tiles/
-// Tiles are 512x512 pixels and are offset by 1 zoom level.
-// {z}/{x}/{y}: Are the tile coordinates. They specify the tile's zoom level, column, and row respectively.
+// Initializes the map layer
 L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
-    // String to be shown in the attribution control. Legal obligation towards copyright holders and tile providers 
-    attribution: 'Room 12 Prototype Mark II Alpha 0.91 Beta 4.20 Demo 6 Area 51 Operation Made You Look',
-    
-    // The max zoom level up to which this layer will be displayed (inclusive)
+    attribution: 'Room 12 Prototype Mark II Alpha 0.91 Beta 4.20 Demo 6 Area 51 Operation Made You Look', //Gives credit and copyright attribute to OpenStreetMaps and Leaflet
     maxZoom: 18,
-    // ***** WARNING: If you do not include the tileSize: 512 and zoomOffset: -1 options, your map will still
-    // ***** load but labels, icons, and other features may appear much smaller than expected.  
-    
-    // Width and height of tiles in the grid. Default is 512
-    // Use a num if width and height are equal, or L.point(width, height) otherwise
     tileSize: 512,
-    
-    // The zoom number used in tile URLs will be offset with this value. Default is 0
     zoomOffset: -1,
-    
-    // The ID of the style from which to return a raster tile     
     id: 'mapbox/streets-v11',
-
-    // Maps API key
-    accessToken: api_key
+    accessToken: api_key //Use your own API key to get info from OpenStreetMaps
 }).addTo(map);
+
+// Starts at UCSC
+var marker = L.marker([36.9881, -122.0582]).addTo(map); //Starting location
+marker.bindPopup("<b>University of California Santa Cruz</b><br>Home Sweet Home");
 
 function roundToTwo(num) { //returns a float rounded to the hundredths place
     return +(Math.round(num + "e+2")  + "e-2");
@@ -275,7 +259,4 @@ function toTitleCase(str) { //Changes a string to capitalize every word's first 
     });
 }
 
-// Commented out the marker for UCSC, since we only want markers for Vaccine Locations
-// Unless we start with the marker, then clear it in the search.
-var marker = L.marker([36.9881, -122.0582]).addTo(map); //Starting location
-marker.bindPopup("<b>University of California Santa Cruz</b>");
+
