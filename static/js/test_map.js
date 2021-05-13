@@ -1,16 +1,16 @@
 //TODO Search and Side Menu
-//Show the nearest locations (default 10 miles) Leaflet uses meters by default so must multiply input by 1600!
 //Have side table sorted by nearest location and availability (Other options include range and availability)
 //Implement search by address as well!
 
 
 //TODO MAP optional
     //Dynamic map scrolling that updates the pins and table near map center
+        //Get Lat, Long from center and get the state from API, send state to API and update map
     //Place special marker on where you enter
     //When click on a marker, it highlights its respective row on the table
         //when click off, unhighlights
-    //Check to see if range is valid (0-100) also add slider (css sass)
-    //Slider
+        //Popped up command?
+    //Check to see if range is valid (0-100) also add slider for range (css sass)
 
 
 //TODO Corner cases!!
@@ -63,7 +63,8 @@ let init = (app) => {
         app.vue.zipcode = "";
     };
 
-    //TODO
+    //TODO make sure 00501 < zipcode < 99950
+    //TODO Make sure range is positive
     app.check_form = function (e) {
         if (!app.vue.zipcode) {
             app.vue.zipcode_error = true;
@@ -80,8 +81,13 @@ let init = (app) => {
         }
     };
 
+    //TODO dynamic map
+    //map.getBounds()
+    //esri api
+    // map html should have click event
 
     app.search = function() {
+        app.vue.page_initialized = true;
         // USPS Address API - POST request - City/State Lookup Web Tool
         // Params.: API: CityStateLookup,
         // XML: <CityStateLookupRequest USERID="{{USERID}}"><ZipCode ID="0"><Zip5>20024</Zip5></ZipCode></CityStateLookupRequest>
@@ -108,6 +114,7 @@ let init = (app) => {
             console.log(app.vue.state);
             console.log(app.vue.city);
             // Process GET request from openstreetmap.org using Zip code and U.S. state
+            // Can reduce the call into one
             axios.get("https://nominatim.openstreetmap.org/search?format=json&limit=3&q="+app.vue.zipcode+"+"+app.vue.city+"+"+app.vue.state + "+us").then(function(result) {
                 var coord = result.data;
                 console.log(coord);
@@ -154,7 +161,6 @@ let init = (app) => {
                                 }
                                 return 0;
                             });
-                            app.vue.page_initialized = true;
                         },
                         pointToLayer: availabilityIcon, // Sets icon for every location
                         filter: function(feature, layer) { // Filters out locations that are not within distance
