@@ -1,5 +1,13 @@
 [[extend 'layout.html']]
 
+<!-- page_head customizes header for this page -->
+[[block page_head]]
+<!-- The stylesheet below is for (hosting) Leaflet 1.7.1 w/ subresource integrity enabled -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+    integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+    crossorigin="" />
+[[end]]
+
 <div class="section" id="vue-target" v-cloak>
     <h1 class="title">Search for your nearest vaccination site!</h1>
     <div class="columns block is-mobile">
@@ -39,72 +47,62 @@
                     <input type="submit" @click="search" value="Search" class="button is-success">
                 </div>
             </div>
-            <!-Table->
-            <table v-if="page_initialized" class="table is-fullwidth is-narrow is-hoverable">
-                <thead>
-                    <tr>
-                        <th>Provider</th>
-                        <th>Address</th>
-                        <th>City</th>
-                        <th>Distance (miles)</th>
-                        <th>In Stock</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="r in rows">
-                        <td>{{r.provider}}</td>
-                        <td><a target='_blank' :href="r.addressLink"> {{r.address}} </a></td>
-                        <td>{{r.city}}</td>
-                        <td>{{r.distance}}</td>
-                        <td>{{r.availability}}</td>
-                    </tr>
-                </tbody>
-            </table>
+            <!-- Table -->
+                <table v-if="page_initialized" class="table is-fullwidth is-narrow is-hoverable">
+                    <thead>
+                        <tr>
+                            <th>Provider</th>
+                            <th>Address</th>
+                            <th>City</th>
+                            <th>Distance (miles)</th>
+                            <th>In Stock</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="r in rows">
+                            <td>{{r.provider}}</td>
+                            <td><a target='_blank' :href="r.addressLink"> {{r.address}} </a></td>
+                            <td>{{r.city}}</td>
+                            <td>{{r.distance}}</td>
+                            <td>{{r.availability}}</td>
+                        </tr>
+                    </tbody>
+                </table>
         </div>
         <div class="column is-two-thirds">
             <div id="mapid"></div>
         </div>
     </div>
-
-
 </div>
 
-[[block page head]]
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
-     integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
-     crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
-     integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
-     crossorigin=""></script>
-    <script src="https://code.jquery.com/jquery-3.5.0.js"></script>
-    <script src="js/vue.js"></script>
-    <script src="js/axios.js"></script>
-    <style>
-        [v-cloak] {
-            display: none;
-        }
-        #mapid {
-         height: 700px;
-        }
-        table tbody {
-          display: block;
-          max-height: 450px;
-          overflow-y: scroll;
-        }
+[[block page_scripts]]
+<!-- The script below is for (hosting) Leaflet 1.7.1 w/ subresource integrity enabled -->
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+    integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+    crossorigin=""></script>
+<script src="https://code.jquery.com/jquery-3.5.0.js"></script>
+<style>
+    [v-cloak] {
+        display: none;
+    }
 
-        table thead, table tbody tr {
-          display: table;
-          width: 100%;
-          table-layout: fixed;
-        }
-    </style>
-    <script>let api_key = "[[=API_KEY]]"; let user_id = "[[=USER_ID]]";</script>
-    <script src="js/test_map.js"></script>
-<!-- page_head customizess header for this page-->
-[[block page_head]]
-<!-- The stylesheet below is for (hosting) Leaflet 1.7.1 w/ subresource integrity enabled -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
-    integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
-    crossorigin=""/>
+    #mapid {
+        height: 700px;
+    }
 
+    table tbody {
+        display: block;
+        max-height: 450px;
+        overflow-y: scroll;
+    }
+
+    table thead,
+    table tbody tr {
+        display: table;
+        width: 100%;
+        table-layout: fixed;
+    }
+</style>
+<script>let api_key = "[[=API_KEY]]"; let user_id = "[[=USER_ID]]";</script>
+<script src="js/test_map.js"></script>
 [[end]]

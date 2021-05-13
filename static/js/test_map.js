@@ -43,13 +43,17 @@
 let app = {};
 
 let init = (app) => {
-    app.data = {
+
+    app.lati = 0; //Latitude
+    app.long = 0; //Longitude
+    app.city = ""; //Data that will be obtained from zipcode
+    app.state = ""; 
+
+    app.data = { //This is Vue data
         search_location: null,
-        city: "Santa Cruz", //by default it is Santa Cruz
-        state: "CA", //by Default it is california
         zipcode: null,
         geoJson: null,
-        range: { // Default search radius is 10 miles
+        range: { //Default search radius is 10 miles
             number: 10,
         },
         zipcode_error: false,
@@ -81,6 +85,7 @@ let init = (app) => {
         }
     };
 
+<<<<<<< HEAD
     //TODO dynamic map
     //map.getBounds()
     //esri api
@@ -96,6 +101,9 @@ let init = (app) => {
         request_city += user_id + "\"><ZipCode ID='0'><Zip5>";
         // Add zipcode from input and finish request string
         request_city += app.vue.zipcode + "</Zip5></ZipCode></CityStateLookupRequest>";
+=======
+    app.search = function() {
+>>>>>>> 15dee056e4f6387705ab9011decff1cabc9fd5ce
 
         if (app.vue.geoJson) {
             console.log("Removed the map layer and table");
@@ -103,6 +111,7 @@ let init = (app) => {
             app.vue.geoJson.clearLayers();
         }
 
+<<<<<<< HEAD
         axios.get(request_city).then(function(response) { // Requests information using zipcode and returns state, city
             console.log(response);
             var xml = $.parseXML(response.data),
@@ -169,28 +178,114 @@ let init = (app) => {
                             } else {
                                 return false;
                             }
+=======
+        //Packaging Mapbox Geocoding API request using user zipcode
+        let gc_start = "https://api.mapbox.com/geocoding/v5/mapbox.places/";
+        let gc_end = ".json?country=US&access_token=";
+        let geocoding_request = gc_start.concat(app.vue.zipcode, gc_end, api_key);
+        
+        //First fetch Geocoding API to obtain data for VaccineSpotter API
+        fetch(geocoding_request).then(function (response) {
+            if (response.ok) {
+                return response.json();
+            } else {
+                return Promise.reject(response);
+            }
+        }).then(function (result) {
+            app.lati = result.features[0].geometry.coordinates[1]; //Store latitude
+            app.long = result.features[0].geometry.coordinates[0]; //Longitude
+            app.city = result.features[0].context[0]['text']; //City and State
+            app.state = result.features[0].context[2]['short_code'].split('-')[1];
+            console.log(result); console.log("LATITUDE:", app.lati);
+            console.log("LONGITUDE:", app.long); console.log("CITY:", app.city);
+            console.log("STATE:", app.state);
+        
+            //Packaging VaccineSpotter API request using user U.S.-state 
+            let vacc_sites_by_state = "https://www.vaccinespotter.org/api/v0/states/";
+            let resp_type = ".json";
+            let vaccination_sites_request = vacc_sites_by_state.concat(app.state, resp_type);
+            console.log("VACCINESPOTTER API REQ:", vaccination_sites_request);
+            //Fetch second API -- Vaccination Sites by State
+            return fetch(vaccination_sites_request);
+        
+        }).then(function (response) {
+            if (response.ok) {
+                return response.json();
+            } else {
+                return Promise.reject(response);
+            }
+        }).then(function (userData) {
+            console.log("USERDATA", userData);
+
+            map.flyTo([app.lati, app.long], 13); //Moves to searched location
+            
+            var distance = app.vue.range.number * 1600; //Converts miles from range input to meters
+            console.log("The radius is " + distance + " meters");
+
+            app.vue.geoJson = L.geoJson(userData, //From the json request, we parse information according to our needs and display onto the map
+                {
+                    onEachFeature: function (feature) { //For every location, we set the appropriate information to rows so html can iterate nicely
+                        let distanceToInput = roundToTwo((L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long]))) / 1600);
+                        let available = "No";
+                        if (feature.properties.appointments_available) {
+                            available = "Yes";
+>>>>>>> 15dee056e4f6387705ab9011decff1cabc9fd5ce
                         }
-                    }).bindPopup(function (layer) { //Sets popup for every location
-                        var distanceToInput = roundToTwo((L.latLng(layer.feature.geometry.coordinates[1], layer.feature.geometry.coordinates[0]).distanceTo(L.latLng([lat,lng])))/1600);
-                        var popup = "<b>" + layer.feature.properties.name + "</b>"
-                               + "<h2>" + "Provider: " + layer.feature.properties.provider_brand_name + "</h2>"
-                               + "<h2>" + "Address: " + toTitleCase(layer.feature.properties.address) + "</h2>"
-                               + "<h2>" + "City: " + toTitleCase(layer.feature.properties.city) + "</h2>"
-                               + "<h2>" + "Zip Code: " + layer.feature.properties.postal_code + "</h2>"
-                               + "<h2>" + "Distance: " + distanceToInput + " miles</h2>";
-                        //No way to tell what vaccine each site carries
-                        if(layer.feature.properties.appointments_available == true) {
-                            popup += "<h2 class='has-text-success'>Available</h2>"
-                                  + "<a target='_blank' href='" + layer.feature.properties.url + "'>" + "Book an Appointment" + "</a>";
+                        let theCity = feature.properties.city.charAt(0) + feature.properties.city.substring(1).toLowerCase();
+                        let theAddress = toTitleCase(feature.properties.address);
+                        let addressSearch = theAddress.split(' ').join('+');
+                        addressSearch = "https://www.google.com/maps/place/" + addressSearch + "+" + theCity;
+                        app.vue.rows.push({ //Adds location to array
+                            provider: feature.properties.provider_brand_name,
+                            address: theAddress,
+                            addressLink: addressSearch,
+                            city: toTitleCase(theCity),
+                            zipcode: feature.properties.postal_code,
+                            distance: distanceToInput,
+                            availability: available,
+                        });
+                        app.vue.rows.sort(function (a, b) { //Sorts the locations by increasing distance to input
+                            let distanceA = a.distance;
+                            let distanceB = b.distance;
+                            if (distanceA < distanceB) {
+                                return -1;
+                            } else if (distanceA > distanceB) {
+                                return 1;
+                            }
+                            return 0;
+                        });
+                        app.vue.page_initialized = true;
+                    },
+                    pointToLayer: availabilityIcon, // Sets icon for every location
+                    filter: function (feature) { // Filters out locations that are not within distance
+                        if (L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long])) <= distance) {
+                            return true;
                         } else {
-                            popup += "<h2 class='has-text-danger'>Not Available</h2>";
+                            return false;
                         }
-                        return popup;
-                    }).addTo(map);
-                    app.clear_search();
-                });
-            });
+                    }
+                }).bindPopup(function (layer) { //Sets popup for every location
+                    var distanceToInput = roundToTwo((L.latLng(layer.feature.geometry.coordinates[1], layer.feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long]))) / 1600);
+                    var popup = "<b>" + layer.feature.properties.name + "</b>"
+                        + "<h2>" + "Provider: " + layer.feature.properties.provider_brand_name + "</h2>"
+                        + "<h2>" + "Address: " + toTitleCase(layer.feature.properties.address) + "</h2>"
+                        + "<h2>" + "City: " + toTitleCase(layer.feature.properties.city) + "</h2>"
+                        + "<h2>" + "Zip Code: " + layer.feature.properties.postal_code + "</h2>"
+                        + "<h2>" + "Distance: " + distanceToInput + " miles</h2>";
+                    if (layer.feature.properties.appointments_available == true) {
+                        popup += "<h2 class='has-text-success'>Available</h2>"
+                            + "<a target='_blank' href='" + layer.feature.properties.url + "'>" + "Book an Appointment" + "</a>";
+                    } else {
+                        popup += "<h2 class='has-text-danger'>Not Available</h2>";
+                    }
+                    return popup;
+                }).addTo(map);
+            app.clear_search();
+
+        }).catch(function (error) {
+            console.warn(error);
         });
+        
     };
 
     app.methods = {
@@ -202,7 +297,7 @@ let init = (app) => {
     app.vue = new Vue({
         el : "#vue-target",
         data: app.data,
-        methods: app.methods
+        methods: app.methods,
     });
 
     app.init = () => {
@@ -212,10 +307,10 @@ let init = (app) => {
 
 init(app);
 
-// Creates instance of map and sets default view to UCSC Campus w/ zoom level 13
+//Creates instance of map and sets default view to UCSC Campus w/ zoom level 13
 var map = L.map('mapid').setView([36.9881, -122.0582], 13);
 
-// Initializes the map layer
+//Initializes the map layer
 L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
     attribution: 'Room 12 Prototype Mark II Alpha 0.91 Beta 4.20 Demo 6 Area 51 Operation Made You Look', //Gives credit and copyright attribute to OpenStreetMaps and Leaflet
     maxZoom: 18,
@@ -225,7 +320,7 @@ L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_toke
     accessToken: api_key //Use your own API key to get info from OpenStreetMaps
 }).addTo(map);
 
-// Starts at UCSC
+//Starts at UCSC
 var marker = L.marker([36.9881, -122.0582]).addTo(map); //Starting location
 marker.bindPopup("<b>University of California Santa Cruz</b><br>Home Sweet Home");
 
@@ -264,5 +359,3 @@ function toTitleCase(str) { //Changes a string to capitalize every word's first 
         return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
     });
 }
-
-
