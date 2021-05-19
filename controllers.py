@@ -125,3 +125,9 @@ def test_map():
 @action.uses(db, session, auth, 'test_data.html')
 def test_map():
     return dict(USER_ID=USER_ID)
+
+@action('get_data_url')
+@action.uses(db, session, auth)
+def test_map():
+    data_url = request.params.get('data_url')
+    return dict(data_url=data_url)

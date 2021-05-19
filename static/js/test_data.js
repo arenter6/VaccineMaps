@@ -44,7 +44,7 @@ let init = (app) => {
     app.init = () => {
         // Put here any initialization code.
         // Typically this is a server GET call to load the data.
-        // axios.get('/test_data')
+        // axios.get(get_data_url)
         // .then(function (response) 
         // {
         //   console.log(response.data.data);
