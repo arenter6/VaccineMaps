@@ -1,5 +1,10 @@
 [[extend 'layout.html']]
 
+<style>
+    [v-cloak] {
+        display: none;
+    }
+</style>
 
 <script src='https://d3js.org/d3.v4.min.js'></script>
 
@@ -8,20 +13,25 @@
 
 <h2 class="subtitle">Ratings Histogram</h2>
 <div id="ratingviz" class="block"></div>
-<label class="checkbox">
-    <div class="block">
-        <input type="checkbox">
-        Pfizer
-</label>
+<div class="section" id="vue-target" v-cloak>
 
-<label class="checkbox">
-    <input type="checkbox">
-    Moderna
-</label>
+    <label class="checkbox">
+        <div class="block">
+            <input type="checkbox" @click="set_data_url(test_data_pfizer)">
+            Pfizer
+    </label>
+
+    <label class="checkbox">
+        <input type="checkbox" @click="set_data_url(test_data_moderna)">
+        Moderna
+    </label>
+
+    <h1 class="title">{{data_url}}</h1>
+
+</div>
 </div>
 <!-- Put option here to select vaccine and then display graph -->
 <script>
-
     // set the dimensions and margins of the graph
     var margin = { top: 10, right: 30, bottom: 30, left: 40 },
         width = 600 - margin.left - margin.right,
@@ -37,7 +47,7 @@
             "translate(" + margin.left + "," + margin.top + ")");
 
     // get the data
-    d3.csv("test_data.csv", function (data) {
+    d3.csv("test_data_moderna.csv", function (data) {
         console.log(data);
         // X axis: scale and draw:
         var x = d3.scaleLinear()
@@ -72,7 +82,16 @@
             .attr("transform", function (d) { return "translate(" + x(d.x0) + "," + y(d.length) + ")"; })
             .attr("width", function (d) { return x(d.x1) - x(d.x0) - 1; })
             .attr("height", function (d) { return height - y(d.length); })
-            .style("fill", "#69b3a2")   
+            .style("fill", "#69b3a2")
 
     });
 </script>
+
+
+[[block page_scripts]]
+<!-- Loads the index-specific js for Vue -->
+<script>
+  
+</script>
+<script src="js/test_data.js"></script>
+[[end]]
