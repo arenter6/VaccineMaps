@@ -119,3 +119,9 @@ def view_reviews():
 @action.uses(db, session, auth, 'test_map.html')
 def test_map():
     return dict(API_KEY=API_KEY, USER_ID=USER_ID)
+
+#######Test data charts
+@action('test_data')
+@action.uses(db, session, auth, 'test_data.html')
+def test_map():
+    return dict(USER_ID=USER_ID)
