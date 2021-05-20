@@ -23,8 +23,20 @@ VACCINES = {
 #I have changed auth.py to take inputs of age and gender
 #Not ideal, gotta find where they call auth.html endpoint and form
 
+##Need to make form using gender/age and store into review
+#use this form for authorization
+db.define_table(
+    'user_info',
+    Field('users_id', db.auth_user, default=auth.user_id),
+    Field('gender'),
+    Field('age')
+)
 
 ##Table for reviews
+##store all address in lower case
+##use zip code and address to access in database and set into the map
+## map should have the total ratings/ num of ratings
+
 db.define_table(
     'review',
     Field('users_id', db.auth_user, default=auth.user_id),
@@ -38,7 +50,6 @@ db.define_table(
 
 db.define_table(
     'site',
-    Field('provider'),
     Field('address'),
     Field('city'),
     Field('zipcode'),

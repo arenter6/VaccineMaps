@@ -85,12 +85,12 @@ let init = (app) => {
         }
     };
 
-<<<<<<< HEAD
+
     //TODO dynamic map
     //map.getBounds()
     //esri api
     // map html should have click event
-
+/*
     app.search = function() {
         app.vue.page_initialized = true;
         // USPS Address API - POST request - City/State Lookup Web Tool
@@ -101,17 +101,14 @@ let init = (app) => {
         request_city += user_id + "\"><ZipCode ID='0'><Zip5>";
         // Add zipcode from input and finish request string
         request_city += app.vue.zipcode + "</Zip5></ZipCode></CityStateLookupRequest>";
-=======
+*/
     app.search = function() {
->>>>>>> 15dee056e4f6387705ab9011decff1cabc9fd5ce
-
         if (app.vue.geoJson) {
             console.log("Removed the map layer and table");
             app.vue.rows = [];
             app.vue.geoJson.clearLayers();
         }
-
-<<<<<<< HEAD
+        /*
         axios.get(request_city).then(function(response) { // Requests information using zipcode and returns state, city
             console.log(response);
             var xml = $.parseXML(response.data),
@@ -178,7 +175,7 @@ let init = (app) => {
                             } else {
                                 return false;
                             }
-=======
+        */
         //Packaging Mapbox Geocoding API request using user zipcode
         let gc_start = "https://api.mapbox.com/geocoding/v5/mapbox.places/";
         let gc_end = ".json?country=US&access_token=";
@@ -229,7 +226,6 @@ let init = (app) => {
                         let available = "No";
                         if (feature.properties.appointments_available) {
                             available = "Yes";
->>>>>>> 15dee056e4f6387705ab9011decff1cabc9fd5ce
                         }
                         let theCity = feature.properties.city.charAt(0) + feature.properties.city.substring(1).toLowerCase();
                         let theAddress = toTitleCase(feature.properties.address);
