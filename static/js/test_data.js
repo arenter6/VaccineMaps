@@ -10,6 +10,7 @@ let init = (app) => {
     // This is the Vue data.
     app.data = {
         data_url: "",
+        rows = []
     };
 
     app.enumerate = (a) => {
@@ -50,6 +51,9 @@ let init = (app) => {
         //   console.log(response.data.data);
         //   data_url = response.data.data_url;
         // });
+        axios.get(get_reviews).then(function(response) {
+
+        });
     };
     // Call to the initializer.
     app.init();

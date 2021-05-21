@@ -48,7 +48,7 @@
             "translate(" + margin.left + "," + margin.top + ")");
 
     // get the data
-    d3.csv("test_data_moderna.csv", function (data) {
+    d3.json(load_reviews_url, function (data) {
         console.log(data);
         // X axis: scale and draw:
         var x = d3.scaleLinear()
@@ -65,7 +65,7 @@
             .thresholds(x.ticks(5)); // then the numbers of bins
 
         // And apply this function to data to get the bins
-        var bins = histogram(data);
+        var bins = histogram(data.rating);
 
         // Y axis: scale and draw:
         var y = d3.scaleLinear()
@@ -89,6 +89,9 @@
 </script>
 
 
+<script>
+    let load_reviews_url = "[[=XML(load_reviews_url)]]";
+</script>
 [[block page_scripts]]
 <!-- Loads the index-specific js for Vue -->
 <script>

@@ -6,7 +6,6 @@
 
 //TODO MAP optional
     //Dynamic map scrolling that updates the pins and table near map center
-    //Place special marker on where you enter
     //When click on a marker, it highlights its respective row on the table
         //when click off, unhighlights
     //Check to see if range is valid (0-100) also add slider (css sass)
@@ -27,9 +26,10 @@
 
 //TODO customization
   //If a site has been reviewed, blue stroke but with availability colored pin
-  //If pin is clicked on, call database to get average reviews and table of reviews
-  //Implement table that has coordinates from its address
   //Include images (if have time)
+
+//TODO implement stars for rating on map
+    //implement half stars for half ratings
 
 //TODO table
     //make it sortable (provider, distance, availability)
@@ -112,7 +112,10 @@ let init = (app) => {
             console.log(result); console.log("LATITUDE:", app.lati);
             console.log("LONGITUDE:", app.long); console.log("CITY:", app.city);
             console.log("STATE:", app.state);
-        
+            if(!app.state) {
+                if(app.city = "Washington")
+                    app.state = "DC";
+            }
             //Packaging VaccineSpotter API request using user U.S.-state 
             let vacc_sites_by_state = "https://www.vaccinespotter.org/api/v0/states/";
             let resp_type = ".json";
@@ -135,63 +138,84 @@ let init = (app) => {
             var distance = app.vue.range.number * 1600; //Converts miles from range input to meters
             console.log("The radius is " + distance + " meters");
 
-            app.vue.geoJson = L.geoJson(userData, //From the json request, we parse information according to our needs and display onto the map
-                {
-                    onEachFeature: function (feature) { //For every location, we set the appropriate information to rows so html can iterate nicely
-                        let distanceToInput = roundToTwo((L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long]))) / 1600);
-                        let available = "No";
-                        if (feature.properties.appointments_available) {
-                            available = "Yes";
-                        }
-                        let theCity = feature.properties.city.charAt(0) + feature.properties.city.substring(1).toLowerCase();
-                        let theAddress = toTitleCase(feature.properties.address);
-                        let addressSearch = theAddress.split(' ').join('+');
-                        addressSearch = "https://www.google.com/maps/place/" + addressSearch + "+" + theCity;
-                        app.vue.rows.push({ //Adds location to array
-                            provider: feature.properties.provider_brand_name,
-                            address: theAddress,
-                            addressLink: addressSearch,
-                            city: toTitleCase(theCity),
-                            zipcode: feature.properties.postal_code,
-                            distance: distanceToInput,
-                            availability: available,
-                        });
-                        app.vue.rows.sort(function (a, b) { //Sorts the locations by increasing distance to input
-                            let distanceA = a.distance;
-                            let distanceB = b.distance;
-                            if (distanceA < distanceB) {
-                                return -1;
-                            } else if (distanceA > distanceB) {
-                                return 1;
+            //TODO sorry but you probably need to fix this to your syntax lmao
+            axios.get(load_ratings_url, {params: {"state": app.state}}).then(function(ratingsRequest) {
+                let ratingsData = ratingsRequest.data;
+                console.log(ratingsData);
+                app.vue.geoJson = L.geoJson(userData, //From the json request, we parse information according to our needs and display onto the map
+                    {
+                        onEachFeature: function (feature) { //For every location, we set the appropriate information to rows so html can iterate nicely
+                            let distanceToInput = roundToTwo((L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long]))) / 1600);
+                            let available = "No";
+                            if (feature.properties.appointments_available) {
+                                available = "Yes";
                             }
-                            return 0;
-                        });
-                        app.vue.page_initialized = true;
-                    },
-                    pointToLayer: availabilityIcon, // Sets icon for every location
-                    filter: function (feature) { // Filters out locations that are not within distance
-                        if (L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long])) <= distance) {
-                            return true;
-                        } else {
-                            return false;
+                            let theCity = feature.properties.city.charAt(0) + feature.properties.city.substring(1).toLowerCase();
+                            let theAddress = toTitleCase(feature.properties.address);
+                            let addressSearch = theAddress.split(' ').join('+');
+                            addressSearch = "https://www.google.com/maps/place/" + addressSearch + "+" + theCity;
+                            let rating = 0;
+                            //TODO
+                            if((feature.properties.address.toLowerCase()) in ratingsData.ratings) {
+                                rating = ratingsData.ratings[feature.properties.address.toLowerCase()].average_rating;
+                            }
+                            app.vue.rows.push({ //Adds location to array
+                                provider: feature.properties.provider_brand_name,
+                                address: theAddress,
+                                addressLink: addressSearch,
+                                city: toTitleCase(theCity),
+                                zipcode: feature.properties.postal_code,
+                                distance: distanceToInput,
+                                rating: rating,
+                                availability: available,
+                            });
+                            app.vue.rows.sort(function (a, b) { //Sorts the locations by increasing distance to input
+                                let distanceA = a.distance;
+                                let distanceB = b.distance;
+                                if (distanceA < distanceB) {
+                                    return -1;
+                                } else if (distanceA > distanceB) {
+                                    return 1;
+                                }
+                                return 0;
+                            });
+                            app.vue.page_initialized = true;
+                        },
+                        pointToLayer: availabilityIcon, // Sets icon for every location
+                        filter: function (feature) { // Filters out locations that are not within distance
+                            if (L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long])) <= distance) {
+                                return true;
+                            } else {
+                                return false;
+                            }
                         }
-                    }
-                }).bindPopup(function (layer) { //Sets popup for every location
-                    var distanceToInput = roundToTwo((L.latLng(layer.feature.geometry.coordinates[1], layer.feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long]))) / 1600);
-                    var popup = "<b>" + layer.feature.properties.name + "</b>"
-                        + "<h2>" + "Provider: " + layer.feature.properties.provider_brand_name + "</h2>"
-                        + "<h2>" + "Address: " + toTitleCase(layer.feature.properties.address) + "</h2>"
-                        + "<h2>" + "City: " + toTitleCase(layer.feature.properties.city) + "</h2>"
-                        + "<h2>" + "Zip Code: " + layer.feature.properties.postal_code + "</h2>"
-                        + "<h2>" + "Distance: " + distanceToInput + " miles</h2>";
-                    if (layer.feature.properties.appointments_available == true) {
-                        popup += "<h2 class='has-text-success'>Available</h2>"
-                            + "<a target='_blank' href='" + layer.feature.properties.url + "'>" + "Book an Appointment" + "</a>";
-                    } else {
-                        popup += "<h2 class='has-text-danger'>Not Available</h2>";
-                    }
-                    return popup;
-                }).addTo(map);
+                    }).bindPopup(function (layer) { //Sets popup for every location
+                        var distanceToInput = roundToTwo((L.latLng(layer.feature.geometry.coordinates[1], layer.feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long]))) / 1600);
+                        var popup = "<b>" + layer.feature.properties.name + "</b>"
+                            + "<h2>" + "Provider: " + layer.feature.properties.provider_brand_name + "</h2>"
+                            + "<h2>" + "Address: " + toTitleCase(layer.feature.properties.address) + "</h2>"
+                            + "<h2>" + "City: " + toTitleCase(layer.feature.properties.city) + "</h2>"
+                            + "<h2>" + "Zip Code: " + layer.feature.properties.postal_code + "</h2>"
+                            + "<h2>" + "Distance: " + distanceToInput + " miles</h2>";
+                        //Insert ratings here
+                        if((layer.feature.properties.address.toLowerCase()) in ratingsData.ratings) {
+                            popup += "<h2'>" + "Rating: "
+                                  + ratingsData.ratings[layer.feature.properties.address.toLowerCase()].average_rating + " stars</h2>"
+                        } else {
+                            popup += "<h2 class='has-text-warning'>" + "Rating: Not yet rated</h2>"
+                        }
+                        if (layer.feature.properties.appointments_available == true) {
+                            popup += "<h2 class='has-text-success'>Available</h2>"
+                                + "<a target='_blank' href='" + layer.feature.properties.url + "'>" + "Book an Appointment" + "</a>";
+                        } else {
+                            popup += "<h2 class='has-text-danger'>Not Available</h2>";
+                        }
+                        return popup;
+                    }).addTo(map);
+            });
+
+
+
             app.clear_search();
 
         }).catch(function (error) {
@@ -271,3 +295,4 @@ function toTitleCase(str) { //Changes a string to capitalize every word's first 
         return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
     });
 }
+
