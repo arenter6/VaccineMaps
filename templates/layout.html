@@ -23,10 +23,11 @@
       <div class="container is-max-widescreen is-centered">
         <!-- <h1 class="title">TEXT</h1> -->
         <!-- <img src="../static/logoplaceholder.png"> -->
+
         <div class="columns is-vcentered">
           <div class="column is-narrow"><img src="../static/logoplaceholder.png" width="50%" height="50%"></div>
           <div class="column is-narrow">
-            <h1 class="title">Vaccine Maps</h1>
+            <a class="navbar-item" href="[[=URL('index')]]"><h1 class="title">Vaccine Maps</h1></a>
           </div>
           <div class="column">
             <nav class="navbar-end" role="navigation" aria-label="main navigation">
@@ -36,14 +37,17 @@
                   </span>
                   <span>Search</span>
                 </span></a>
+              <a class="navbar-item" href="[[=URL('test_map')]]">
+                Book an Appointment
+              </a>
               <div class="navbar-item has-dropdown is-hoverable">
                 <a class="navbar-link">
-                  Link1
+                  Reviews
                 </a>
                 <div class="navbar-dropdown">
-                  <a href="" class="navbar-item">dropdown1</a>
-                  <a href="" class="navbar-item">dropdown2</a>
-                  <a href="" class="navbar-item">dropdown3</a>
+                  <a href="[[=URL('experience')]]" class="navbar-item">Leave a Review</a>
+                  <a href="[[=URL('view_reviews')]]" class="navbar-item">View Reviews</a>
+                  <a href="[[=URL('test_data')]]" class="navbar-item">Data Visualization</a>
                 </div>
               </div>
               <div class="navbar-item has-dropdown is-hoverable">
@@ -51,20 +55,29 @@
                   About
                 </a>
                 <div class="navbar-dropdown">
-                  <a href="" class="navbar-item">dropdown1</a>
-                  <a href="" class="navbar-item">dropdown2</a>
-                  <a href="" class="navbar-item">dropdown3</a>
+                  <a href="" class="navbar-item">FAQ</a>
+                  <a href="" class="navbar-item">Contact Us</a>
+                  <a href="" class="navbar-item">About Us</a>
                 </div>
               </div>
-              <div class="navbar-item has-dropdown is-hoverable">
-                <a class="navbar-link">
-                  Reviews
-                </a>
-                <div class="navbar-dropdown">
-                  <a href="" class="navbar-item">dropdown1</a>
-                  <a href="" class="navbar-item">dropdown2</a>
-                  <a href="" class="navbar-item">dropdown3</a>
-                </div>
+
+              <div class="buttons">
+                [[if globals().get('user'):]]
+                  <div class="navbar-item has-dropdown is-hoverable">
+                    <a class="navbar-link is-primary">
+                      [[=globals().get('user').get('email')]]
+                    </a>
+                    <div class="navbar-dropdown">
+                      <a class="navbar-item" href="[[=URL('auth/logout')]]">Logout</a>
+                      <a class="navbar-item" href="[[=URL('auth/profile')]]">Profile</a>
+                      <a class="navbar-item" href="[[=URL('auth/change_password')]]">Change Password</a></li>
+
+                    </div>
+                  </div>
+                [[else:]]
+                  <a class="button is-light" href="[[=URL('auth/register')]]">Sign up</a>
+                  <a class="button is-info" href="[[=URL('auth/login')]]">Log in</a>
+                [[pass]]
               </div>
             </nav>
           </div>
