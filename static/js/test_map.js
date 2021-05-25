@@ -47,12 +47,14 @@ let init = (app) => {
     app.lati = 0; //Latitude
     app.long = 0; //Longitude
     app.city = ""; //Data that will be obtained from zipcode
-    app.state = ""; 
+    app.state = "";
+    app.zoomLevel = 0,
 
     app.data = { //This is Vue data
         search_location: null,
         zipcode: null,
         geoJson: null,
+        //range: 10,
         range: { //Default search radius is 10 miles
             number: 10,
         },
@@ -61,6 +63,14 @@ let init = (app) => {
         map_layer: null,
         rows: [],
         page_initialized: false,
+        /*
+        options: [
+            { text: '1 miles', value: 1 },
+            { text: '5 miles', value: 5 },
+            { text: '10 miles', value: 10 },
+            { text: '25 miles', value: 25 },
+            { text: '50 miles', value: 50 },
+        ], */
     };
 
     app.clear_search = function() {
@@ -97,7 +107,7 @@ let init = (app) => {
         let gc_end = ".json?country=US&access_token=";
         let geocoding_request = gc_start.concat(app.vue.zipcode, gc_end, api_key);
         
-        //First fetch Geocoding API to obtain data for VaccineSpotter API
+        //First, fetch Geocoding API to obtain data for VaccineSpotter API
         fetch(geocoding_request).then(function (response) {
             if (response.ok) {
                 return response.json();
@@ -105,13 +115,28 @@ let init = (app) => {
                 return Promise.reject(response);
             }
         }).then(function (result) {
-            app.lati = result.features[0].geometry.coordinates[1]; //Store latitude
-            app.long = result.features[0].geometry.coordinates[0]; //Longitude
-            app.city = result.features[0].context[0]['text']; //City and State
-            app.state = result.features[0].context[2]['short_code'].split('-')[1];
-            console.log(result); console.log("LATITUDE:", app.lati);
-            console.log("LONGITUDE:", app.long); console.log("CITY:", app.city);
-            console.log("STATE:", app.state);
+            //Store latitude and longitude
+            console.log(result);
+            app.lati = result.features[0].geometry.coordinates[1];
+            app.long = result.features[0].geometry.coordinates[0];
+            //Store features that hold city and state
+            let cityState = result.features[0].context;
+            console.log('CITY STATE ELEMENTS');
+            //For each element id, if it matches 'place' and 'region' grab city and state
+            cityState.forEach(function(elem) {
+                //Split the id string at .(Dot); i.e. place. and region. 
+                let str = elem.id.split('.')[0];
+                if (str === 'place') {
+                    app.city = elem.text;
+                    console.log('Found City:', app.city);
+                } else if (str === 'region') { //And region holds state
+                    app.state = elem.short_code.split('-')[1];
+                    console.log('Found State:', app.state);
+                };
+            });
+            console.log(result);
+            console.log("LATITUDE:", app.lati); console.log("LONGITUDE:", app.long);
+            console.log("CITY:", app.city); console.log("STATE:", app.state);
         
             //Packaging VaccineSpotter API request using user U.S.-state 
             let vacc_sites_by_state = "https://www.vaccinespotter.org/api/v0/states/";
@@ -130,10 +155,26 @@ let init = (app) => {
         }).then(function (userData) {
             console.log("USERDATA", userData);
 
-            map.flyTo([app.lati, app.long], 13); //Moves to searched location
+            //Here we adjust zoom levels based on the mile radius selected for search
+            if (app.vue.range.number === 1) {
+                console.log('range:', app.vue.range.number);
+                app.zoomLevel = 15;
+            } else if (app.vue.range.number === 5 || app.vue.range.number === 10) {
+                console.log('range:', app.vue.range.number);
+                app.zoomLevel = 12;
+            } else if (app.vue.range.number === 25) {
+                console.log('range:', app.vue.range.number);
+                app.zoomLevel = 10;
+            } else if (app.vue.range.number === 50) {
+                console.log('range:', app.vue.range.number);
+                app.zoomLevel = 9;
+            }
+
+            map.flyTo([app.lati, app.long], app.zoomLevel); //Moves to searched location
             
             var distance = app.vue.range.number * 1600; //Converts miles from range input to meters
             console.log("The radius is " + distance + " meters");
+            
 
             app.vue.geoJson = L.geoJson(userData, //From the json request, we parse information according to our needs and display onto the map
                 {
@@ -215,6 +256,7 @@ let init = (app) => {
     app.init = () => {
     };
     app.init();
+
 };
 
 init(app);
