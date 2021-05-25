@@ -8,46 +8,94 @@
     crossorigin="" />
 [[end]]
 
-<div class="section" id="vue-target" v-cloak>
-    <h1 class="title">Search for your nearest vaccination site!</h1>
-    <div class="columns block is-mobile">
-        <div class="column">
-            <div class="field">
-                <label class="label">Zipcode (5 digits, U.S. only)</label>
-                <div class="control">
-                    <input type="text" placeholder="Enter a Zipcode" v-model="zipcode" class="input">
-                </div>
-            </div>
-            <div class="field">
-                <!--<div class="control"><input type="text" placeholder="Range" v-model="range" class="input">
-                </div> -->
-                <label class="label">Search Radius</label>
-                <div class="control">
-                    <!-- Single-select drop down menu for search radius in miles -->
-                    <select v-model="range">
-                        <!-- ***** NOTE: The following 2 lines are Vue's recommendation for
-                                adding single-select drop-down menu options.
-                                However, in 'app.data' - test_map.js, we default to 10 miles,
-                                therefore, user doesn't have option to not select a mile range -->
-                        <!-- Recommended by vue to prevent rendering 'unselected' states -->
-                        <!-- <option disabled value="">Please select one</option> -->
+<style>
+    [v-cloak] {
+        display: none;
+    }
+    #mapid {
+        height: 700px;
+    }
+    table tbody {
+        display: block;
+        max-height: 450px;
+        overflow-y: scroll;
+    }
+    table thead,
+    table tbody tr {
+        display: table;
+        width: 100%;
+        table-layout: fixed;
+    }
+    select {
+        height: 40px;
+        width: 75%;
+        border: solid 1px;
+        /*border-radius: 10px 40px 40px 10px;*/
+        border-radius: 4px;
+        font-size: 1em;
+    }
+</style>
 
-                        <!-- ':value"{}"' -- inline object literal -->
-                        <!-- strings are bound to number int -->
-                        <option :value="{ number: 1 }">1 mile</option>
-                        <option :value="{ number: 5 }">5 miles</option>
-                        <option :value="{ number: 10 }">10 miles</option>
-                        <option :value="{ number: 25 }">25 miles</option>
-                        <option :value="{ number: 50 }">50 miles</option>
-                    </select>
+<div class="section" id="vue-target" v-cloak>
+    <div class="section">
+        <h1 class="title">Search for your nearest vaccination site!</h1>
+    </div>
+    
+    <div class="section">
+        <!-- Columns for search on left and map on right -->
+        <div class="columns block is-mobile">
+            <!-- Column for search functionality and generated table of providers -->
+            <div class="column">
+                <div class="columns block is-mobile">
+                    <div class="column is-half">
+                        <label class="label">Zipcode (5 digits, U.S. only)</label>
+                    </div>
+                    <div class="column is-half">
+                        <label class="label">Search Radius</label>
+                    </div>
                 </div>
-            </div>
-            <div class="field">
-                <div class="control">
-                    <input type="submit" @click="search" value="Search" class="button is-success">
+                <!-- <label class="label">Zipcode (5 digits, U.S. only)</label> -->
+                <!-- Nested column for zipcode field -->
+                <div class="columns block is-mobile">
+                    <div class="column is-one-quarter">
+                        <div class="field">
+                            <div class="control has-icons-left">
+                                <input type="text" placeholder="Enter a Zipcode" v-model="zipcode" class="input">
+                                <span class="icon is-small is-left">
+                                    <i class="fa fa-map-marker"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="column is-one-quarter"></div>
+                    <!-- Field for search radius -->
+                    <div class="column is-one-quarter">
+                        <div class="field">
+                            <!--<div class="control"><input type="text" placeholder="Range" v-model="range" class="input">
+                                                                </div> -->
+                            <div class="control">
+                                <!-- Single-select drop down menu for search radius in miles -->
+                                <select v-model="range">
+                                    <!-- :value"{}" -- inline object literal; strings are bound to numbers -->
+                                    <option :value="{ number: 1 }">
+                                        <p>1 mile</p>
+                                    </option>
+                                    <option :value="{ number: 5 }"><span>5 miles</span></option>
+                                    <option :value="{ number: 10 }"><span>10 miles</span></option>
+                                    <option :value="{ number: 25 }"><span>25 miles</span></option>
+                                    <option :value="{ number: 50 }"><span>50 miles</span></option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <!-- Table -->
+
+                <div class="field">
+                    <div class="control">
+                        <input type="submit" @click="search" value="Search" class="button is-success">
+                    </div>
+                </div>
+                <!-- Table -->
                 <table v-if="page_initialized" class="table is-fullwidth is-narrow is-hoverable">
                     <thead>
                         <tr>
@@ -61,16 +109,17 @@
                     <tbody>
                         <tr v-for="r in rows">
                             <td>{{r.provider}}</td>
-                            <td><a target='_blank' :href="r.addressLink"> {{r.address}} </a></td>
+                            <td>{{r.address}}</a></td>
                             <td>{{r.city}}</td>
                             <td>{{r.distance}}</td>
                             <td>{{r.availability}}</td>
                         </tr>
                     </tbody>
                 </table>
-        </div>
-        <div class="column is-two-thirds">
-            <div id="mapid"></div>
+            </div>
+            <div class="column">
+                <div id="mapid"></div>
+            </div>
         </div>
     </div>
 </div>
@@ -81,28 +130,7 @@
     integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
     crossorigin=""></script>
 <script src="https://code.jquery.com/jquery-3.5.0.js"></script>
-<style>
-    [v-cloak] {
-        display: none;
-    }
-
-    #mapid {
-        height: 700px;
-    }
-
-    table tbody {
-        display: block;
-        max-height: 450px;
-        overflow-y: scroll;
-    }
-
-    table thead,
-    table tbody tr {
-        display: table;
-        width: 100%;
-        table-layout: fixed;
-    }
-</style>
 <script>let api_key = "[[=API_KEY]]"; let user_id = "[[=USER_ID]]";</script>
 <script src="js/test_map.js"></script>
+
 [[end]]
