@@ -48,3 +48,31 @@
         </a>
     </div>
 </div>
+
+<table v-if="page_initialized" class="table is-fullwidth is-narrow is-hoverable">
+                    <thead>
+                        <tr>
+                            <th>Provider</th>
+                            <th>Address</th>
+                            <th>City</th>
+                            <th>Distance (miles)</th>
+                            <th>In Stock</th>
+                            <th>Rating</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="r in rows">
+                            <td>{{r.provider}}</td>
+                            <td><a target='_blank' :href="r.addressLink"> {{r.address}} </a></td>
+                            <td>{{r.city}}</td>
+                            <td>{{r.distance}}</td>
+                            <td>{{r.availability}}</td>
+                            <td>
+                                <span v-for="star_idx in [1, 2, 3, 4, 5]">
+                                  <i v-if="star_idx <= r.rating" class="fa fa-star fa-xs"></i>
+                                  <i v-if="star_idx > r.rating" class="fa fa-star-o fa-xs"></i>
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>

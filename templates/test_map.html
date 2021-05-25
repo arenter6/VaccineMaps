@@ -48,33 +48,54 @@
                 </div>
             </div>
             <!-- Table -->
-                <table v-if="page_initialized" class="table is-fullwidth is-narrow is-hoverable">
-                    <thead>
-                        <tr>
-                            <th>Provider</th>
-                            <th>Address</th>
-                            <th>City</th>
-                            <th>Distance (miles)</th>
-                            <th>In Stock</th>
-                            <th>Rating</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="r in rows">
-                            <td>{{r.provider}}</td>
-                            <td><a target='_blank' :href="r.addressLink"> {{r.address}} </a></td>
-                            <td>{{r.city}}</td>
-                            <td>{{r.distance}}</td>
-                            <td>{{r.availability}}</td>
-                            <td>
+            <div class="block" v-if="rows.length"><strong>There are {{rows.length}} sites near you</strong></div>
+            <section>
+                <div class="box has-background-white-ter block" @click="openMarkerPopup(r.id)" v-for="r in rows">
+                    <nav class="level">
+                        <div class="level-left">
+                            <div class="level-item">
+                                <strong>{{r.provider}}</strong>
+                            </div>
+                        </div>
+                        <div class="level-right">
+                            <a target='_blank' :href="r.addressLink">{{r.address}}</a>
+                        </div>
+                    </nav>
+                    <nav class="level">
+                        <div class="level-left">
+                            <div class="level-item">
+                                <div>
+                                    <i class="fa "
+                                    :class="{ 'fa-check-circle fa-lg': r.availability == 'Yes',
+                                                 'fa-times-circle fa-lg': r.availability == 'No'}"
+                                    :style="[ r.availability == 'Yes' ? {color: 'hsl(141, 71%, 48%)'} : {color: 'hsl(360, 100%, 61%)'} ]"
+                                    ></i>
+                                </div>
+                            </div>
+                            <div class="level-item">
+                                <span>•</span>
+                            </div>
+                            <div class="level-item">
+                                {{r.distance}} miles
+                            </div>
+                            <div class="level-item">
+                                <span>•</span>
+                            </div>
+                            <div class="level-item">
                                 <span v-for="star_idx in [1, 2, 3, 4, 5]">
                                   <i v-if="star_idx <= r.rating" class="fa fa-star fa-xs"></i>
                                   <i v-if="star_idx > r.rating" class="fa fa-star-o fa-xs"></i>
                                 </span>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                            </div>
+                        </div>
+                        <div class="level-right">
+                            {{r.city}},
+                            {{r.state}}
+                            {{r.zipcode}}
+                        </div>
+                    </nav>
+                </div>
+            </section>
         </div>
         <div class="column is-7">
             <div id="mapid"></div>
@@ -108,6 +129,12 @@
         display: table;
         width: 100%;
         table-layout: fixed;
+    }
+
+    section {
+        display: block;
+        max-height: 500px;
+        overflow-y: scroll;
     }
 </style>
 <script>

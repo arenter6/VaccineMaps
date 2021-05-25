@@ -144,7 +144,7 @@ let init = (app) => {
                 console.log(ratingsData);
                 app.vue.geoJson = L.geoJson(userData, //From the json request, we parse information according to our needs and display onto the map
                     {
-                        onEachFeature: function (feature) { //For every location, we set the appropriate information to rows so html can iterate nicely
+                        onEachFeature: function (feature, layer) { //For every location, we set the appropriate information to rows so html can iterate nicely
                             let distanceToInput = roundToTwo((L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long]))) / 1600);
                             let available = "No";
                             if (feature.properties.appointments_available) {
@@ -159,15 +159,21 @@ let init = (app) => {
                             if((feature.properties.address.toLowerCase()) in ratingsData.ratings) {
                                 rating = ratingsData.ratings[feature.properties.address.toLowerCase()].average_rating;
                             }
+                            layer._leaflet_id = feature.properties.id;
                             app.vue.rows.push({ //Adds location to array
+                                id: feature.properties.id,
                                 provider: feature.properties.provider_brand_name,
                                 address: theAddress,
                                 addressLink: addressSearch,
                                 city: toTitleCase(theCity),
+                                state: app.state,
                                 zipcode: feature.properties.postal_code,
                                 distance: distanceToInput,
                                 rating: rating,
                                 availability: available,
+                                marker: L.marker([feature.geometry.coordinates[1], feature.geometry.coordinates[0]]),
+                                lat: feature.geometry.coordinates[1],
+                                long: feature.geometry.coordinates[0],
                             });
                             app.vue.rows.sort(function (a, b) { //Sorts the locations by increasing distance to input
                                 let distanceA = a.distance;
@@ -210,6 +216,7 @@ let init = (app) => {
                         } else {
                             popup += "<h2 class='has-text-danger'>Not Available</h2>";
                         }
+
                         return popup;
                     }).addTo(map);
             });
@@ -224,10 +231,53 @@ let init = (app) => {
         
     };
 
+
+    app.openMarkerPopup = function(id){
+        /*for (var i in app.vue.rows){
+            if (app.vue.rows[i].id == id){
+                app.vue.rows[i].marker.openPopup(L.latLng(app.vue.rows[i].lat, app.vue.rows[i].long));
+                console.log("Opened the popup: " + id);
+            };
+        }*/
+
+        if(app.vue.geoJson) {
+            /*app.vue.geoJson.eachLayer(function(feature){
+                for (var i in app.vue.rows){
+                    if (app.vue.rows[i].id == id && feature.feature.properties.id == id){
+                        //app.vue.rows[i].marker.openPopup(L.latLng(app.vue.rows[i].lat, app.vue.rows[i].long));
+                        feature.openPopup(L.latLng(app.vue.rows[i].lat, app.vue.rows[i].long));
+                        feature.openPopup(app.vue.rows[i].marker);
+                        console.log("Opened the popup: " + id);
+                    };
+                }
+            });*/
+            site = "";
+            //TODO I was here
+            for (var i in app.vue.rows){
+                if (app.vue.rows[i].id == id){
+                    site = app.vue.rows[i].id;
+                    console.log("Opened the popup: " + id);
+                    map._layers[site].fire('click');
+                    var coords = map._layers[site]._latlng;
+                    map.setView(coords, 12);
+                    //map._layers[site].openPopup(L.latLng(app.vue.rows[i].lat, app.vue.rows[i].long));
+                    map._layers[site].togglePopup();
+                    //map.openPopup(app.vue.rows[i].marker);
+                    break;
+                };
+            }
+
+        } else {
+            console.log("Geojson is not yet defined");
+        }
+
+    }
+
     app.methods = {
         clear_search: app.clear_search,
         search: app.search,
         check_form: app.check_form,
+        openMarkerPopup: app.openMarkerPopup,
     };
 
     app.vue = new Vue({
@@ -269,7 +319,7 @@ function availabilityIcon (feature, latlng) { //returns the respective icon acco
     iconUrl: 'icons/green.png',
     shadowUrl: 'icons/shadow.png',
     iconSize:     [25, 41], // width and height of the image in pixels
-    shadowSize:   [35, 20], // width, height of optional shadow image
+    shadowSize:   [50, 30], // width, height of optional shadow image
     iconAnchor:   [12, 12], // point of the icon which will correspond to marker's location
     shadowAnchor: [12, 6],  // anchor point of the shadow. should be offset
     popupAnchor:  [0, 0] // point from which the popup should open relative to the iconAnchor
@@ -278,7 +328,7 @@ function availabilityIcon (feature, latlng) { //returns the respective icon acco
     iconUrl: 'icons/red.png',
     shadowUrl: 'icons/shadow.png',
     iconSize:     [25, 41],
-    shadowSize:   [35, 20],
+    shadowSize:   [50, 30],
     iconAnchor:   [12, 12],
     shadowAnchor: [12, 6],
     popupAnchor:  [0, 0]
@@ -289,6 +339,8 @@ function availabilityIcon (feature, latlng) { //returns the respective icon acco
     return L.marker(latlng, { icon: red });
   }
 }
+
+
 
 function toTitleCase(str) { //Changes a string to capitalize every word's first letter and lowercase other
     return str.replace(/\w\S*/g, function(txt){
