@@ -93,7 +93,7 @@ auth_messages['buttons']['lost-password'] = "Lost password"
 # And button classes.
 auth_button_classes = {
     "lost-password": "button is-danger is-light",
-    "register": "button is-info is-light",
+    "register": "button is-info",
     "request": "button is-info",
     "sign-in": "button is-info",
     "sign-up": "button is-light",

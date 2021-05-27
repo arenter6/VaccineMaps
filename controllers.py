@@ -65,10 +65,11 @@ def experience():
     if user.get('email') is not None:
         print("User:" + user.get('email') + " logged in on Experience")
         review_info = db(db.review.users_id == user.get('id')).select().as_list()
-        return dict(logged_in=1, user=user, review_info=review_info, url_signer=url_signer)
+        can_review = True if len(review_info) < 2 else False
+        return dict(logged_in=1, user=user, review_info=review_info, url_signer=url_signer, can_review=can_review)
     else:
         print("User: Not logged in on Experience")
-        return dict(logged_in=0)
+        return dict(logged_in=0, can_review=False)
 
 @action('submit_review', method=['GET', 'POST'])
 @action.uses(db, session, auth.user, 'submit_review.html')
@@ -206,38 +207,50 @@ def test_map():
 
 #######When a review is added, the site's average rating is recalculated
 
-#######Test map: return json object of site's average rating
+#######Return json object of site's average rating
 @action('load_ratings')
 @action.uses(url_signer.verify(), db, auth)
 def load_ratings():
     state = request.params.get('state')
-    ratings = db(db.site.state == state).select().as_list()
+    if state is not None:
+        ratings = db(db.site.state == state).select().as_list()
+    else:
+        ratings = db(db.site).select().as_list()
     ratings_json = {}
     for row in ratings: #Everytime we load ratings, calculate new average and set addresses to lower case
         rating_dict = {
             'average_rating': row["average_rating"],
-            'city': row["city"].lower()
+            'city': row["city"].lower(),
         }
-        ratings_json[row["address"].lower()] = rating_dict
+        ratings_json[row["address"].lower().rsplit(' ', 1)[0]] = rating_dict
     print(ratings_json)
 
     return dict(ratings=ratings_json)
 
-#######Test data return json object of user reviews
+#######Test data
 @action('load_reviews')
 @action.uses(url_signer.verify(), db, auth)
 def load_reviews():
     reviews = db(db.review).select().as_list()
-    return dict(reviews=reviews)
+    reviews_json = []
+    for row in reviews: #Everytime we load ratings, calculate new average and set addresses to lower case
+        #change to use reviews rather than sites
+        rating_dict = {
+            'rating': int(row["rating"]),
+            'vaccine_type': row["vaccine_type"],
+        }
+        reviews_json.append(rating_dict)
+    print(reviews_json)
+
+    return dict(ratings=reviews_json)
 
 
 #######Test data charts
 @action('test_data')
 @action.uses(db, session, auth, 'test_data.html')
 def test_data():
-    load_reviews_url=URL('load_ratings', signer=url_signer)
     return dict(USER_ID=USER_ID,
-                load_reviews_url=load_reviews_url,
+                load_reviews_url=URL('load_reviews', signer=url_signer),
            )
 
 @action('get_data_url')
