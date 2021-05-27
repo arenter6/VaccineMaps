@@ -104,6 +104,7 @@
                             <th>City</th>
                             <th>Distance (miles)</th>
                             <th>In Stock</th>
+                            <th>Rating</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -113,13 +114,18 @@
                             <td>{{r.city}}</td>
                             <td>{{r.distance}}</td>
                             <td>{{r.availability}}</td>
+                            <td>
+                                <span v-for="star_idx in [1, 2, 3, 4, 5]">
+                                  <i v-if="star_idx <= r.rating" class="fa fa-star fa-xs"></i>
+                                  <i v-if="star_idx > r.rating" class="fa fa-star-o fa-xs"></i>
+                                </span>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
-            </div>
-            <div class="column">
-                <div id="mapid"></div>
-            </div>
+        </div>
+        <div class="column is-7">
+            <div id="mapid"></div>
         </div>
     </div>
 </div>
@@ -130,7 +136,7 @@
     integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
     crossorigin=""></script>
 <script src="https://code.jquery.com/jquery-3.5.0.js"></script>
-<script>let api_key = "[[=API_KEY]]"; let user_id = "[[=USER_ID]]";</script>
+<script>let api_key = "[[=API_KEY]]"; let user_id = "[[=USER_ID]]"; let load_ratings_url = "[[=XML(load_ratings_url)]]";</script>
 <script src="js/test_map.js"></script>
 
 [[end]]
