@@ -7,39 +7,80 @@
     integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
     crossorigin="" />
 [[end]]
+<style>
+    [v-cloak] {
+        display: none;
+    }
+
+    #mapid {
+        height: 700px;
+    }
+
+    table tbody {
+        display: block;
+        max-height: 450px;
+        overflow-y: scroll;
+    }
+
+    table thead,
+    table tbody tr {
+        display: table;
+        width: 100%;
+        table-layout: fixed;
+    }
+
+    #site_table{
+        display: block;
+        max-height: 500px;
+        overflow-y: scroll;
+    }
+</style>
 
 <div class="section" id="vue-target" v-cloak>
     <h1 class="title">Search for your nearest vaccination site!</h1>
     <div class="columns block is-mobile">
         <div class="column">
-            <div class="field">
-                <label class="label">Zipcode (5 digits, U.S. only)</label>
-                <div class="control">
-                    <input type="text" placeholder="Enter a Zipcode" v-model="zipcode" class="input">
+            <div class="columns block is-mobile">
+                <div class="column is-half">
+                    <label class="label">Zipcode (5 digits, U.S. only)</label>
+                </div>
+                <div class="column is-half">
+                    <label class="label">Search Radius</label>
                 </div>
             </div>
-            <div class="field">
-                <!--<div class="control"><input type="text" placeholder="Range" v-model="range" class="input">
-                </div> -->
-                <label class="label">Search Radius</label>
-                <div class="control">
-                    <!-- Single-select drop down menu for search radius in miles -->
-                    <select v-model="range">
-                        <!-- ***** NOTE: The following 2 lines are Vue's recommendation for
-                                adding single-select drop-down menu options.
-                                However, in 'app.data' - test_map.js, we default to 10 miles,
-                                therefore, user doesn't have option to not select a mile range -->
-                        <!-- Recommended by vue to prevent rendering 'unselected' states -->
-                        <!-- <option disabled value="">Please select one</option> -->
+            <!-- <label class="label">Zipcode (5 digits, U.S. only)</label> -->
+            <!-- Nested column for zipcode field -->
+            <div class="columns block is-mobile">
+                <div class="column is-half">
+                    <div class="field">
+                        <div class="control has-icons-left">
+                            <input type="text" placeholder="Enter a Zipcode" v-model="zipcode" @keyup.enter.self="search" class="input">
+                            <span class="icon is-small is-left">
+                                <i class="fa fa-map-marker"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Field for search radius -->
+                <div class="column is-one-quarter">
+                    <div class="field">
+                        <!--<div class="control"><input type="text" placeholder="Range" v-model="range" class="input">
+                                                            </div> -->
+                        <div class="select">
+                            <!-- Single-select drop down menu for search radius in miles -->
+                            <select v-model="range">
+                                <!-- :value"{}" -- inline object literal; strings are bound to numbers -->
+                                <option :value="{ number: 1 }">
+                                    <p>1 mile</p>
+                                </option>
+                                <option :value="{ number: 5 }"><span>5 miles</span></option>
+                                <option :value="{ number: 10 }"><span>10 miles</span></option>
+                                <option :value="{ number: 25 }"><span>25 miles</span></option>
+                                <option :value="{ number: 50 }"><span>50 miles</span></option>
+                            </select>
+                        </div>
 
-                        <!-- ':value"{}"' -- inline object literal -->
-                        <!-- strings are bound to number int -->
-                        <option :value="{ number: 1 }">1 mile</option>
-                        <option :value="{ number: 5 }">5 miles</option>
-                        <option :value="{ number: 10 }">10 miles</option>
-                        <option :value="{ number: 25 }">25 miles</option>
-                        <option :value="{ number: 50 }">50 miles</option>
-                    </select>
+                    </div>
                 </div>
             </div>
             <div class="field">
@@ -48,9 +89,13 @@
                 </div>
             </div>
             <!-- Table -->
-            <div class="block" v-if="rows.length"><strong>There are {{rows.length}} sites near you</strong></div>
-            <section>
-                <div class="box has-background-white-ter block" @click="openMarkerPopup(r.id)" v-for="r in rows">
+            <div class="block" v-if="rows.length"><strong>There are {{rows.length}} sites near you. {{available_sites}} sites are in stock.</strong></div>
+            <section id="site_table">
+                <div @mouseover="highlight(r._idx, true)" @mouseout="highlight(r._idx, false)"
+                     :class="{ 'box block has-background-grey-lighter': r.highlight,
+                               'box block has-background-white-ter': !r.highlight}"
+
+                    @click="openMarkerPopup(r.id, r._idx, r.toggle)" v-for="r in rows">
                     <nav class="level">
                         <div class="level-left">
                             <div class="level-item">
@@ -58,7 +103,7 @@
                             </div>
                         </div>
                         <div class="level-right">
-                            <a target='_blank' :href="r.addressLink">{{r.address}}</a>
+                            <a target='_blank' :href="r.addressLink">{{r.address}} <i class="fa fa-car fa-lg"></i></a>
                         </div>
                     </nav>
                     <nav class="level">
@@ -67,7 +112,7 @@
                                 <div>
                                     <i class="fa "
                                     :class="{ 'fa-check-circle fa-lg': r.availability == 'Yes',
-                                                 'fa-times-circle fa-lg': r.availability == 'No'}"
+                                              'fa-times-circle fa-lg': r.availability == 'No'}"
                                     :style="[ r.availability == 'Yes' ? {color: 'hsl(141, 71%, 48%)'} : {color: 'hsl(360, 100%, 61%)'} ]"
                                     ></i>
                                 </div>
@@ -107,36 +152,8 @@
 <!-- The script below is for (hosting) Leaflet 1.7.1 w/ subresource integrity enabled -->
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
     integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
-    crossorigin=""></script>
-<script src="https://code.jquery.com/jquery-3.5.0.js"></script>
-<style>
-    [v-cloak] {
-        display: none;
-    }
-
-    #mapid {
-        height: 700px;
-    }
-
-    table tbody {
-        display: block;
-        max-height: 450px;
-        overflow-y: scroll;
-    }
-
-    table thead,
-    table tbody tr {
-        display: table;
-        width: 100%;
-        table-layout: fixed;
-    }
-
-    section {
-        display: block;
-        max-height: 500px;
-        overflow-y: scroll;
-    }
-</style>
+    crossorigin="">
+</script>
 <script>
         let api_key = "[[=API_KEY]]";
         let user_id = "[[=USER_ID]]";
