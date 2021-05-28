@@ -34,6 +34,15 @@
         max-height: 500px;
         overflow-y: scroll;
     }
+
+    select {
+        height: 40px;
+        width: 100%;
+        border: solid 1px;
+        /*border-radius: 10px 40px 40px 10px;*/
+        border-radius: 4px;
+        font-size: 1em;
+    }
 </style>
 
 <div class="section" id="vue-target" v-cloak>
@@ -51,7 +60,7 @@
             <!-- <label class="label">Zipcode (5 digits, U.S. only)</label> -->
             <!-- Nested column for zipcode field -->
             <div class="columns block is-mobile">
-                <div class="column is-half">
+                <div class="column is-one-quarter">
                     <div class="field">
                         <div class="control has-icons-left">
                             <input type="text" placeholder="Enter a Zipcode" v-model="zipcode" @keyup.enter.self="search" class="input">
@@ -61,28 +70,30 @@
                         </div>
                     </div>
                 </div>
+                <div class="column is-one-quarter"></div>
                 <!-- Field for search radius -->
                 <div class="column is-one-quarter">
-                    <div class="field">
-                        <!--<div class="control"><input type="text" placeholder="Range" v-model="range" class="input">
-                                                            </div> -->
-                        <div class="select">
-                            <!-- Single-select drop down menu for search radius in miles -->
-                            <select v-model="range">
-                                <!-- :value"{}" -- inline object literal; strings are bound to numbers -->
-                                <option :value="{ number: 1 }">
-                                    <p>1 mile</p>
-                                </option>
-                                <option :value="{ number: 5 }"><span>5 miles</span></option>
-                                <option :value="{ number: 10 }"><span>10 miles</span></option>
-                                <option :value="{ number: 25 }"><span>25 miles</span></option>
-                                <option :value="{ number: 50 }"><span>50 miles</span></option>
-                            </select>
+                    <div class="field"> 
+                        <div class="control">
+                            <div class="select">
+                                <!-- Single-select drop down menu for search radius in miles -->
+                                <select v-model="range">
+                                    <!-- :value"{}" -- inline object literal; strings are bound to numbers -->
+                                    <option :value="{ number: 1 }"><span>1 mile</span></option>
+                                    <option :value="{ number: 5 }"><span>5 miles</span></option>
+                                    <option :value="{ number: 10 }"><span>10 miles</span></option>
+                                    <option :value="{ number: 25 }"><span>25 miles</span></option>
+                                    <option :value="{ number: 50 }"><span>50 miles</span></option>
+                                </select>
+                            </div>
                         </div>
-
                     </div>
                 </div>
             </div>
+            <div v-if="invalid_zipcode_error">
+                <p style="color:red">Please enter a valid zipcode.</p>
+            </div>
+
             <div class="field">
                 <div class="control">
                     <input type="submit" @click="search" value="Search" class="button is-success">
@@ -91,10 +102,10 @@
             <!-- Table -->
             <div class="block" v-if="rows.length"><strong>There are {{rows.length}} sites near you. {{available_sites}} sites are in stock.</strong></div>
             <section id="site_table">
-                <div @mouseover="highlight(r._idx, true)" @mouseout="highlight(r._idx, false)"
-                     :class="{ 'box block has-background-grey-lighter': r.highlight,
-                               'box block has-background-white-ter': !r.highlight}"
-
+                <div @mouseover="highlight(r._idx, true)" 
+                    @mouseout="highlight(r._idx, false)"
+                    :class="{ 'box block has-background-grey-lighter': r.highlight,
+                            'box block has-background-white-ter': !r.highlight}"
                     @click="openMarkerPopup(r.id, r._idx, r.toggle)" v-for="r in rows">
                     <nav class="level">
                         <div class="level-left">
