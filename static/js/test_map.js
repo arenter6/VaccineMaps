@@ -139,12 +139,8 @@ let init = (app) => {
                 console.log('range:', app.vue.range.number);
                 app.zoomLevel = 9;
             }
-<<<<<<< HEAD
-
-=======
             app.vue.center = [app.lati, app.long]; //Sets searched center and zoom for later reference with table
             app.vue.zoom = app.zoomLevel;
->>>>>>> test-data
             map.flyTo([app.lati, app.long], app.zoomLevel); //Moves to searched location
             
             var distance = app.vue.range.number * 1600; //Converts miles from range input to meters
