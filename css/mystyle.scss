@@ -3,7 +3,7 @@
 
 //Set our project colors
 
-$primary: #000000;
+// $primary: #000000;
 $headercolor: #30475e;
 $header-invert: findColorInvert($headercolor);
 
@@ -21,7 +21,7 @@ $header-invert: findColorInvert($headercolor);
 // $colors: map-merge($colors, $addColors);
 
 // 6. Import the rest of Bulma
-@import "../../../node_modules/bulma";
+@import "../bulma/css/bulma.css";
 // @import "../../../node_modules/bulma/sass/utilities/_all.sass";
 // @import "../../../node_modules/bulma/sass/base/_all.sass";
 // @import "../../../node_modules/bulma/sass/elements/button.sass";
