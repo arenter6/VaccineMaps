@@ -39,7 +39,6 @@
         height: 40px;
         width: 100%;
         border: solid 1px;
-        /*border-radius: 10px 40px 40px 10px;*/
         border-radius: 4px;
         font-size: 1em;
     }
@@ -48,19 +47,22 @@
 <div class="section" id="vue-target" v-cloak>
     <h1 class="title">Search for your nearest vaccination site!</h1>
     <div class="columns block is-mobile">
-        <div class="column">
+
+        <div class="column"> <!-- Column for Vaccine Search -->
             <div class="columns block is-mobile">
-                <div class="column is-half">
-                    <label class="label">Zipcode (5 digits, U.S. only)</label>
+                <div class="column is-one-third">
+                    <label class="label">Zipcode (U.S. only)</label>
                 </div>
-                <div class="column is-half">
+                <div class="column is-one-third">
                     <label class="label">Search Radius</label>
                 </div>
+                <div class="column">
+                    <label class="label">Vaccine Type</label>
+                </div>
             </div>
-            <!-- <label class="label">Zipcode (5 digits, U.S. only)</label> -->
-            <!-- Nested column for zipcode field -->
+
             <div class="columns block is-mobile">
-                <div class="column is-one-quarter">
+                <div class="column is-3">
                     <div class="field">
                         <div class="control has-icons-left">
                             <input type="text" placeholder="Enter a Zipcode" v-model="zipcode" @keyup.enter.self="search" class="input">
@@ -69,16 +71,12 @@
                             </span>
                         </div>
                     </div>
-                </div>
-                <div class="column is-one-quarter"></div>
-                <!-- Field for search radius -->
-                <div class="column is-one-quarter">
-                    <div class="field"> 
-                        <div class="control">
-                            <div class="select">
-                                <!-- Single-select drop down menu for search radius in miles -->
-                                <select v-model="range">
-                                    <!-- :value"{}" -- inline object literal; strings are bound to numbers -->
+                </div> <!-- END COL FOR ZIPCODE FIELD -->
+                <div class="column is-3 is-offset-1">
+                    <div class="field">
+                        <div class="control has-icons-left">
+                            <div class="select"> <!-- Single-select drop down menu for search radius in miles -->
+                                <select v-model="range"> <!-- :value"{}" -- inline object literal; strings are bound to numbers -->
                                     <option :value="{ number: 1 }"><span>1 mile</span></option>
                                     <option :value="{ number: 5 }"><span>5 miles</span></option>
                                     <option :value="{ number: 10 }"><span>10 miles</span></option>
@@ -86,6 +84,33 @@
                                     <option :value="{ number: 50 }"><span>50 miles</span></option>
                                 </select>
                             </div>
+                            <span class="icon is-small is-left">
+                                <i class="fa fa-road"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div><!-- END COL FOR MILE RADIUS SELECT -->
+                <div class="column is-offset-1">
+                    <div class="field">
+                        <div class="control">
+                            <div class="tile is-ancestor">
+                                <div class="tile is-vertical">
+                                    <article class="tile">
+                                        <label class="checkbox">
+                                            <input type="checkbox" v-model="pfizer_selected"> Pfizer-BioNTech
+                                        </label>
+                                    </article>
+                                    <article class="tile">
+                                        <label class="checkbox">
+                                            <input type="checkbox" v-model="moderna_selected"> Moderna
+                                        </label>
+                                    </article>
+                                    <article class="tile">
+                                        <label class="checkbox">
+                                            <input type="checkbox" v-model="jj_selected"> Johnson & Johnson
+                                    </article>
+                                </div>
+                           </div>
                         </div>
                     </div>
                 </div>
@@ -101,7 +126,7 @@
                 <p style="color:red"><b>Please enter a valid zipcode.</b></p>
             </div>
             <div v-if="invalid_vacc_search">
-                <p style="color:red"><b>Please increase the search radius or try a neighboring zipcode</b></p>
+                <p style="color:red"><b>Please increase the search radius or try a neighboring zipcode.</b></p>
             </div>
             
             <!-- Table -->

@@ -317,9 +317,9 @@ def view_reviews():
 
 
 #######Test Map using OpenStreetMaps
-@action('test_map')
-@action.uses(db, session, auth, 'test_map.html')
-def test_map():
+@action('vaccine_search')
+@action.uses(db, session, auth, 'vaccine_search.html')
+def vaccine_search():
     return dict(API_KEY=API_KEY, USER_ID=USER_ID, load_ratings_url=URL('load_ratings', signer=url_signer))
 
 #######When a review is added, the site's average rating is recalculated

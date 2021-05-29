@@ -51,6 +51,9 @@ let init = (app) => {
         page_initialized: false,
         invalid_zipcode_error: false,
         invalid_vacc_search: false,
+        pfizer_selected: true,
+        moderna_selected: true,
+        jj_selected: true,
     };
 
     app.clear_search = function() {
@@ -69,7 +72,10 @@ let init = (app) => {
     };
 
     app.checkVaccineTypes = function(app_vacc_types, popup){
+ 
         vacc_types_arr = Object.keys(app_vacc_types);
+        
+        //console.log('VACC_TYPES', vacc_types_arr);
         //If vaccine types arr holds keys
         if (vacc_types_arr.length > 0) {
             popup += "<h3 class='has-text-success-dark'>"; //Start sub-header
@@ -202,6 +208,7 @@ let init = (app) => {
                         if (addressRemovedAbbreviation in ratingsData.ratings) {
                             rating = ratingsData.ratings[addressRemovedAbbreviation].average_rating;
                         }
+
                         layer._leaflet_id = feature.properties.id;
                         app.vue.rows.push({ //Adds location to array with information
                             id: feature.properties.id,
@@ -264,9 +271,20 @@ let init = (app) => {
                         } else {
                             popup += "<h2 class='has-text-warning'>" + "Rating: Not yet rated</h2>";
                         }
-                        //Since VaccineSpotterAPI is spotty on Costco locations & vaccine supply is currently high; redirect users to book appt
-                        if (feature.properties.provider_brand_name === 'Costco'){
-                            feature.properties.appointments_available = true;    
+
+                        //Since VaccineSpotterAPI is spotty on Costco & Safeway locations; vaccine supply is currently high; redirect users to book appt
+                        if (feature.properties.provider_brand_name === 'Costco' || feature.properties.provider_brand_name === 'Safeway'){
+                            console.log('Found a:', feature.properties.provider_brand_name);
+                            console.log('Vaccines avail:', feature.properties.appointment_vaccine_types);
+                            if (feature.properties.appointment_vaccine_types === null) {
+                                console.log('Provider', feature.properties.provider_brand_name);
+                                console.log('@', feature.properties.adddress);
+                                console.log('REPORTED NULL');
+                                const source = {'unknown': true};
+                                feature.properties.appointment_vaccine_types = Object.assign(feature.properties.appointment_vaccine_types, source);
+                                console.log('POST ADDING APP_VACC_TYPES', feature.properties.appointment_vaccine_types);
+                            }
+
                         }
 
                         let apps_available = feature.properties.appointments_available;
@@ -274,7 +292,8 @@ let init = (app) => {
                             //Star sub-header indicating availability
                             popup += "<h2 class='has-text-success-dark'><b>Available</b></h2>";
                             //Call checkVaccineTypes to see if location has vaccine types data to add to popup
-                            popup = app.checkVaccineTypes(feature.properties.appointment_vaccine_types, popup);
+                            let app_vacc_types = feature.properties.appointment_vaccine_types;
+                            popup = app.checkVaccineTypes(app_vacc_types, popup);
                             //Link for booking appointment at specified location
                             popup += "<a target='_blank' href='" + feature.properties.url + "'>" + "Book an Appointment" + "</a>";
 
@@ -305,7 +324,7 @@ let init = (app) => {
             }
             app.clear_search(); //Clears zip code search form
         }).catch(function (error) { //Catches errors for all API calls
-            //console.warn(error);
+            console.warn(error);
             app.vue.invalid_zipcode_error = true;
         });
         
