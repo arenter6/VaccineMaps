@@ -25,44 +25,52 @@
         <!-- <img src="../static/logoplaceholder.png"> -->
 
         <div class="columns is-vcentered">
-          <div class="column is-narrow"><img src="../static/logoplaceholder.png" width="50%" height="50%"></div>
-          <div class="column is-narrow">
-            <a class="navbar-item" href="[[=URL('index')]]"><h1 class="title">Vaccine Maps</h1></a>
-          </div>
-          <div class="column">
-            <nav class="navbar-end" role="navigation" aria-label="main navigation">
-              <a class="navbar-item"><span class="icon-text">
-                  <span class="icon">
-                    <i class="fa fa-search"></i>
-                  </span>
-                  <span>Search</span>
-                </span></a>
-              <a class="navbar-item" href="[[=URL('test_map')]]">
-                Book an Appointment
-              </a>
-              <div class="navbar-item has-dropdown is-hoverable">
-                <a class="navbar-link">
-                  Reviews
-                </a>
-                <div class="navbar-dropdown">
-                  <a href="[[=URL('experience')]]" class="navbar-item">Leave a Review</a>
-                  <a href="[[=URL('view_reviews')]]" class="navbar-item">View Reviews</a>
-                  <a href="[[=URL('test_data')]]" class="navbar-item">Data Visualization</a>
-                </div>
-              </div>
-              <div class="navbar-item has-dropdown is-hoverable">
-                <a class="navbar-link">
-                  About
-                </a>
-                <div class="navbar-dropdown">
-                  <a href="" class="navbar-item">FAQ</a>
-                  <a href="" class="navbar-item">Contact Us</a>
-                  <a href="" class="navbar-item">About Us</a>
-                </div>
-              </div>
 
-              <div class="buttons">
-                [[if globals().get('user'):]]
+          <div class="column is-one-third">
+            <div class="columns">
+              <div class="column is-3">
+                <img src="../static/vaccine_maps_logo.png" width="100%" height="100%" >
+              </div>
+              <div class="column is-9 my-2">
+                <a class="navbar-item" href="[[=URL('index')]]"><h1 class="title">Vaccine Maps</h1></a>
+              </div>
+            </div>
+          </div>
+          <div class="colum is-two-thirds">
+            <div class="column">
+              <nav class="navbar-end" role="navigation" aria-label="main navigation">
+          
+                <a class="navbar-item" href="[[=URL('vaccine_search')]]">
+                  <span class="icon-text">
+                    <span class="icon">
+                      <i class="fas fa-syringe"></i>
+                    </span>
+                    <span>Book an Appointment</span>
+                  </span>
+                </a>
+                <div class="navbar-item has-dropdown is-hoverable">
+                  <a class="navbar-link">
+                    Reviews
+                  </a>
+                  <div class="navbar-dropdown">
+                    <a href="[[=URL('experience')]]" class="navbar-item">Leave a Review</a>
+                    <a href="[[=URL('view_reviews')]]" class="navbar-item">View Reviews</a>
+                    <a href="[[=URL('test_data')]]" class="navbar-item">Data Visualization</a>
+                  </div>
+                </div>
+                <div class="navbar-item has-dropdown is-hoverable">
+                  <a class="navbar-link">
+                    About
+                  </a>
+                  <div class="navbar-dropdown">
+                    <a href="" class="navbar-item">FAQ</a>
+                    <a href="" class="navbar-item">Contact Us</a>
+                    <a href="" class="navbar-item">About Us</a>
+                  </div>
+                </div>
+          
+                <div class="buttons">
+                  [[if globals().get('user'):]]
                   <div class="navbar-item has-dropdown is-hoverable">
                     <a class="navbar-link is-primary">
                       [[=globals().get('user').get('email')]]
@@ -71,16 +79,19 @@
                       <a class="navbar-item" href="[[=URL('auth/logout')]]">Logout</a>
                       <a class="navbar-item" href="[[=URL('auth/profile')]]">Profile</a>
                       <a class="navbar-item" href="[[=URL('auth/change_password')]]">Change Password</a></li>
-
+          
                     </div>
                   </div>
-                [[else:]]
+                  [[else:]]
                   <a class="button is-light" href="[[=URL('auth/register')]]">Sign up</a>
                   <a class="button is-info" href="[[=URL('auth/login')]]">Log in</a>
-                [[pass]]
-              </div>
-            </nav>
+                  [[pass]]
+                </div>
+              </nav>
+            </div>
+          
           </div>
+
         </div>
       </div>
     </div>
@@ -122,6 +133,7 @@
 <script src="js/axios.min.js"></script>
 <script src="js/vue.js"></script>
 <script src="js/utils.js"></script>
+<script src="https://kit.fontawesome.com/63140bd432.js" crossorigin="anonymous"></script>
 [[block page_scripts]]
 <!-- individual pages can add scripts here -->[[end]]
 
