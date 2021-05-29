@@ -25,11 +25,11 @@ session, db, T, auth, and tempates are examples of Fixtures.
 Warning: Fixtures MUST be declared with @action.uses({fixtures}) else your app will result in undefined behavior
 """
 
-from py4web import action, request, abort, redirect, URL, Field
+from py4web import action, request, response, abort, redirect, URL, Field
 from yatl.helpers import A
 from . common import db, session, T, cache, auth
 from py4web.utils.url_signer import URLSigner
-from .models import get_user_email, us_states
+from .models import get_user_email, us_states, get_time
 from py4web.utils.form import Form, FormStyleBulma
 from pydal.validators import *
 from .settings_private import *
@@ -72,37 +72,70 @@ def experience():
         return dict(logged_in=0, can_review=False)
 
 @action('submit_review', method=['GET', 'POST'])
-@action.uses(db, session, auth.user, 'submit_review.html')
+@action.uses(db, session, auth.user, 'submit_review.html', url_signer.verify())
 def submit_review():
-    user = auth.get_user()
-    form = Form(experience_fields, csrf_session=session, formstyle=FormStyleBulma)
-    if form.accepted:
-        print(get_user_email() + "'s review has been successfully submitted!")
-        site = db((db.site.address == form.vars['site_address']) & (db.site.city == form.vars['city'])).select().first()
-        print("Site: ")
-        print(site)
-        if site is not None: #increment raters and total rating if site already in db
-            print("Updating a site")
-            db((db.site.address == form.vars['site_address']) & (db.site.city == form.vars['city'])).update(
-                total_rating=int(site.total_rating) + form.vars['rating'],
-                num_raters=int(site.num_raters) + 1,
-                average_rating=float(int(site.total_rating) + form.vars['rating'])/float(int(site.num_raters) + 1)
-            )
-        else: #insert a new site with initial rating and rater
-            print("Inserting a site")
-            db.site.insert(
-                address=form.vars['site_address'],
-                city=form.vars['city'],
-                state=form.vars['state'],
-                total_rating=form.vars['rating'],
-                num_raters=1,
-                average_rating=float(form.vars['rating'])
-            )
-        db.review.insert(users_id=user.get('id'), user_email=user.get('email'), vaccine_type=form.vars['vaccine_type'],
-                         rating=form.vars['rating'], site_address=form.vars['site_address'],
-                         city=form.vars['city'], state=form.vars['state'], feedback=form.vars['feedback'])
+    user = auth.get_user() #double check
+    if user is None:
         redirect(URL('experience'))
-    return dict(form=form)
+    return dict(submit_form_url=URL('submit_form', signer=url_signer))
+
+#Submit form call from submit review
+@action('submit_form', method="POST")
+@action.uses(url_signer.verify(), db)
+def submit_form():
+    user = auth.get_user() #double check
+    if user is None:
+        redirect(URL('experience'))
+
+    ##Check to see reviews are less than two
+    site = db((db.site.address == request.json.get('site_address')) & (db.site.city == request.json.get('city'))).select().first()
+    print("Site: ")
+    print(site)
+    if site is not None: #increment raters and total rating if site already in db
+        print("Updating a site")
+        db((db.site.address == request.json.get('site_address')) & (db.site.city == request.json.get('city'))).update(
+            total_rating=int(site.total_rating) + int(request.json.get('rating')),
+            num_raters=int(site.num_raters) + 1,
+            average_rating=float(int(site.total_rating) + int(request.json.get('rating')))/float(int(site.num_raters) + 1)
+        )
+    else: #insert a new site with initial rating and rater
+        print("Inserting a site")
+        db.site.insert(
+            address=request.json.get('site_address'),
+            city=request.json.get('city'),
+            state=request.json.get('state'),
+            total_rating=int(request.json.get('rating')),
+            num_raters=1,
+            average_rating=float(request.json.get('rating'))
+        )
+    try:
+        site_array = request.json.get('site_address').split()
+        address_link = "https://www.google.com/maps/place/"
+        for word in site_array:
+            address_link += word + "+"
+        address_link += request.json.get('city') + "+" + request.json.get('state')
+        db.review.insert(
+            users_id=user.get('id'),
+            user_email=user.get('email'),
+            vaccine_type=request.json.get('vaccine_type'),
+            rating=int(request.json.get('rating')),
+            site_address=request.json.get('site_address'),
+            address_link=address_link,
+            city=request.json.get('city'),
+            state=request.json.get('state'),
+            feedback=request.json.get('feedback'),
+            vaccinated_date=request.json.get('date'),
+            precise_time=get_time,
+        )
+        response.status = 200
+    except Exception as e:
+        response.status = 500
+        print(e)
+        return "Something went wrong"
+    print(get_user_email() + "'s review has been successfully submitted!")
+    return dict(redirect=URL('experience'))
+
+
 
 @action('edit_review/<review_id:int>', method=["GET", "POST"])
 @action.uses(db, session, auth.user, url_signer.verify(), 'edit_review.html')
@@ -117,7 +150,6 @@ def edit_review(review_id=None):
     if form.accepted:
         print(get_user_email() + "'s review was successfully updated.")
         site = db((db.site.address == form.vars['site_address']) & (db.site.city == form.vars['city'])).select().first()
-        print(site)
         if site is not None: #if site is already in db
             if (r.site_address != form.vars['site_address']) or (r.city != form.vars['city']) or (r.state != form.vars['state']): #if location is changed
                 db((db.site.address == form.vars['site_address']) & (db.site.city == form.vars['city'])).update(
@@ -160,12 +192,97 @@ def edit_review(review_id=None):
                     num_raters=int(old_site.num_raters) - 1,
                     average_rating=float(int(old_site.total_rating) - int(r.rating))/float(int(old_site.num_raters) - 1)
                 )
-
         db(db.review.id == r.id).update(vaccine_type=form.vars['vaccine_type'], rating=form.vars['rating'],
                                         site_address=form.vars['site_address'], city=form.vars['city'],
                                         state=form.vars['state'], feedback=form.vars['feedback'])
         redirect(URL('experience'))
-    return dict(form=form, user=user)
+        print(review_id)
+    return dict(review_id=review_id, user=user, signer=url_signer, edit_review_load_url=URL('edit_review_load', signer=url_signer), edit_review_submit_url=URL('edit_review_submit', signer=url_signer))
+
+#Gets the review record and sends edit review
+@action('edit_review_load')
+@action.uses(db, session, auth.user, url_signer.verify())
+def edit_review_load():
+    user = auth.get_user()
+    review_id = request.params.get('review_id')
+    r = db.review[review_id]
+    assert r is not None
+    assert r.users_id == user.get('id')
+    review = {'vaccine_type': r.vaccine_type, 'rating': r.rating, 'site_address': r.site_address,
+              'city': r.city, 'state': r.state, 'feedback': r.feedback, 'date': r.vaccinated_date}
+    return dict(review=review)
+
+#Submit the edited form
+@action('edit_review_submit', method="POST")
+@action.uses(url_signer.verify(), db)
+def edit_review_submit():
+    user = auth.get_user() #double check
+    if user is None:
+        redirect(URL('experience'))
+
+    old_review_id = int(request.json.get('old_id'))
+    r = db.review[old_review_id]
+    print(get_user_email() + "'s review was successfully updated.")
+    site = db((db.site.address == request.json.get('site_address')) & (db.site.city == request.json.get('city'))).select().first()
+    #First update the site
+    if site is not None: #if site is already in db
+        if (r.site_address != request.json.get('site_address')) or (r.city != request.json.get('city')) or (r.state != request.json.get('state')): #if location is changed
+            db((db.site.address == request.json.get('site_address')) & (db.site.city == request.json.get('city'))).update(
+                total_rating=int(site.total_rating) - int(r.rating) + int(request.json.get('rating')),
+                num_raters=int(site.num_raters) + 1,
+                average_rating=float(int(site.total_rating) - int(r.rating) + int(request.json.get('rating')))/float(int(site.num_raters) + 1)
+            )
+            #decrement old rating and raters
+            old_site = db((db.site.address == r.site_address) & (db.site.city == r.city)).select().first()
+            if int(old_site.num_raters) <= 1: #avoid division by 0
+                db((db.site.address == r.site_address) & (db.site.city == r.city)).delete()
+            else:
+                db((db.site.address == r.site_address) & (db.site.city == r.city)).update(
+                    total_rating=int(old_site.total_rating) - int(r.rating),
+                    num_raters=int(old_site.num_raters) - 1,
+                    average_rating=float(int(old_site.total_rating) - int(r.rating))/float(int(old_site.num_raters) - 1)
+                )
+        else: #user did not change site address, city or state so just update the total ratings and average
+            db((db.site.address == request.json.get('site_address')) & (db.site.city == request.json.get('city'))).update(
+                total_rating=int(site.total_rating) - int(r.rating) + int(request.json.get('rating')),
+                average_rating=float(int(site.total_rating) - int(r.rating) + int(request.json.get('rating')))/float(site.num_raters)
+            )
+    else: #If the new site has not been reviewed, add one to db
+        print("Inserted a location from edit")
+        db.site.insert( #Insert new site rating
+            address=request.json.get('site_address'),
+            city=request.json.get('city'),
+            state=request.json.get('state'),
+            total_rating=int(request.json.get('rating')),
+            num_raters=1,
+            average_rating=float(request.json.get('rating'))
+        )
+        #Remove old site rating and num raters and delete if 0 raters
+        old_site = db((db.site.address == r.site_address) & (db.site.city == r.city)).select().first()
+        if int(old_site.num_raters) <= 1: #avoid division by 0
+            db((db.site.address == r.site_address) & (db.site.city == r.city)).delete()
+        else:
+            db((db.site.address == r.site_address) & (db.site.city == r.city)).update(
+                total_rating=int(old_site.total_rating) - int(r.rating),
+                num_raters=int(old_site.num_raters) - 1,
+                average_rating=float(int(old_site.total_rating) - int(r.rating))/float(int(old_site.num_raters) - 1)
+            )
+    try: #Update the review
+        site_array = request.json.get('site_address').split()
+        address_link = "https://www.google.com/maps/place/"
+        for word in site_array:
+            address_link += word + "+"
+        address_link += request.json.get('city') + "+" + request.json.get('state')
+        db(db.review.id == r.id).update(vaccine_type=request.json.get('vaccine_type'), rating=int(request.json.get('rating')),
+                                        site_address=request.json.get('site_address'), city=request.json.get('city'), address_link=address_link,
+                                        vaccinated_date=request.json.get('date'), state=request.json.get('state'), feedback=request.json.get('feedback'))
+        response.status = 200
+    except Exception as e:
+        response.status = 500
+        print(e)
+        return "Something went wrong"
+    print(get_user_email() + "'s review has been successfully edited!")
+    return dict(redirect=URL('experience'))
 
 @action('delete_review/<review_id:int>')
 @action.uses(db, session, auth.user, url_signer.verify())
@@ -193,7 +310,7 @@ def delete_review(review_id=None):
 @action('view_reviews')
 @action.uses(db, session, auth, 'view_reviews.html')
 def view_reviews():
-    review_info = db(db.review.id != None).select().as_list()
+    review_info = db(db.review.id).select().as_list()
     return dict(review_info=review_info)
 
 #######Experience ends

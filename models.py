@@ -28,14 +28,15 @@ VACCINES = {
 db.define_table(
     'review',
     Field('users_id', db.auth_user, default=auth.user_id),
-    Field('vaccine_type', requires=IS_IN_SET(VACCINES), error_message=T("Please choose from the list above.")),
-    Field('rating', requires=IS_INT_IN_RANGE(0, 6), error_message=T("Please enter a rating between 0 and 5.")),
-    Field('site_address', requires=IS_NOT_EMPTY(), error_message=T("Please enter a valid address.")),
-    Field('city', requires=IS_NOT_EMPTY(), error_message=T("Please enter a valid city.")),
-    Field('state', requires=IS_NOT_EMPTY(), error_message=T("Please enter a valid state.")), #Probably need to make a drop down list of states
+    Field('vaccine_type', requires=IS_IN_SET(VACCINES)),
+    Field('rating', requires=IS_INT_IN_RANGE(0, 6)),
+    Field('site_address', requires=IS_NOT_EMPTY()),
+    Field('city', requires=IS_NOT_EMPTY()),
+    Field('state', requires=IS_NOT_EMPTY(),),
     Field('feedback', type='string'),
     Field('precise_time', default=get_time),
-    Field('submitted_time', default=datetime.datetime.now().strftime('%m/%d/%Y')),
+    Field('vaccinated_date', requires=IS_NOT_EMPTY()),
+    Field('address_link'),
 )
 
 #used for map
@@ -49,13 +50,8 @@ db.define_table(
     Field('state')
 )
 
-
-#db.user.id.readable = False
-#db.user.user_email.readable = db.user.user_email.writable = False
 db.review.id.readable = False
 db.review.precise_time.readable = db.review.precise_time.writable = False
-db.review.submitted_time.readable = db.review.submitted_time.writable = False
-#db.review.user_email.readable = db.review.user_email.writable = False
 db.review.users_id.readable = False
 
 us_states = {

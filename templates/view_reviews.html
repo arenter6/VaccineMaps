@@ -1,33 +1,35 @@
 [[extend 'layout.html']]
-
-<div class="section">
-    <h1 class="title">Vaccine Reviews</h1>
-    <!-Feel free to add a data visualization thing here. Could be made using vue charts or something->
-    <div class="block">
-        <table class="table is-striped is-fullwidth">
-            <tr>
-                <th>Vaccine Type</th>
-                <th>Vaccination Site</th>
-                <th>City</th>
-                <th>State</th>
-                <th>Rating</th>
-                <th>Feedback</th>
-                <th>Day Reported</th>
-            </tr>
-            [[for row in review_info:]]
-            <tr>
-                <td>[[=row["vaccine_type"] ]]</td>
-                <td>[[=row["site_address"] ]]</td>
-                <td>[[=row["city"] ]]</td>
-                <td>[[=row["state"] ]]</td>
-                <td>[[=row["rating"] ]]</td>
-                <td>[[=row["feedback"] ]]</td>
-                <td>[[=row["submitted_time"] ]] </td>
-            </tr>
-            [[pass]]
-        </table>
+<div class="container is-centered is-max-widescreen">
+    <div class="section">
+        <h1 class="title">Vaccine Reviews</h1>
+        <!-Feel free to add a data visualization thing here. Could be made using vue charts or something->
+        <div class="block">
+            <table class="table is-striped is-fullwidth">
+                <tr>
+                    <th>Vaccine Type</th>
+                    <th>Vaccination Site</th>
+                    <th>City</th>
+                    <th>State</th>
+                    <th>Rating</th>
+                    <th>Feedback</th>
+                    <th>Day Reported</th>
+                </tr>
+                <!-Sorted by reverse chronological order, must handle when many reviews with pages or scrollable table->
+                [[for row in review_info:]]
+                <tr>
+                    <td>[[=row["vaccine_type"] ]]</td>
+                    <td><a target='_blank' href="[[=row['address_link'] ]]">[[=row["site_address"] ]]</a></td>
+                    <td>[[=row["city"] ]]</td>
+                    <td>[[=row["state"] ]]</td>
+                    <td>[[=row["rating"] ]]</td>
+                    <td><div style="width: 442px; word-wrap: break-word">[[=row["feedback"] ]]</div></td>
+                    <td>[[=row["vaccinated_date"] ]] </td>
+                </tr>
+                [[pass]]
+            </table>
+        </div>
+        <a class="button is-primary" href="[[=URL('experience')]]">
+          <span>Back</span>
+        </a>
     </div>
-    <a class="button is-primary" href="[[=URL('experience')]]">
-      <span>Back</span>
-    </a>
 </div>

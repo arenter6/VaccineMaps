@@ -50,17 +50,8 @@
     <div class="columns block is-mobile">
         <div class="column">
             <div class="columns block is-mobile">
-                <div class="column is-half">
-                    <label class="label">Zipcode (5 digits, U.S. only)</label>
-                </div>
-                <div class="column is-half">
-                    <label class="label">Search Radius</label>
-                </div>
-            </div>
-            <!-- <label class="label">Zipcode (5 digits, U.S. only)</label> -->
-            <!-- Nested column for zipcode field -->
-            <div class="columns block is-mobile">
-                <div class="column is-one-quarter">
+                <div class="column is-one-third">
+                    <label class="label">Zipcode (U.S. only)</label>
                     <div class="field">
                         <div class="control has-icons-left">
                             <input type="text" placeholder="Enter a Zipcode" v-model="zipcode" @keyup.enter.self="search" class="input">
@@ -69,11 +60,13 @@
                             </span>
                         </div>
                     </div>
+                    <div v-if="invalid_zipcode_error">
+                        <p style="color:red">Please enter a valid zipcode.</p>
+                    </div>
                 </div>
-                <div class="column is-one-quarter"></div>
-                <!-- Field for search radius -->
-                <div class="column is-one-quarter">
-                    <div class="field"> 
+                <div class="column is-narrow">
+                    <label class="label">Search Radius</label>
+                    <div class="field">
                         <div class="control">
                             <div class="select">
                                 <!-- Single-select drop down menu for search radius in miles -->
@@ -89,9 +82,22 @@
                         </div>
                     </div>
                 </div>
-            </div>
-            <div v-if="invalid_zipcode_error">
-                <p style="color:red">Please enter a valid zipcode.</p>
+                <div class="column is-one-third">
+                    <label class="label">Vaccine Type</label>
+                    <div class="field">
+                        <div class="control">
+                            <label class="checkbox">
+                                <input type="checkbox" v-model="pfizer_selected"> Pfizer-BioNTech
+                            </label>
+                            <label class="checkbox">
+                                <input type="checkbox" v-model="moderna_selected"> Moderna
+                            </label>
+                            <label class="checkbox">
+                                <input type="checkbox" v-model="jj_selected"> Johnson & Johnson
+                            </label>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="field">
