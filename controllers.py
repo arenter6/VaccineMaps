@@ -33,6 +33,7 @@ from .models import get_user_email
 from py4web.utils.form import Form, FormStyleBulma
 from pydal.validators import *
 from .settings_private import *
+import csv, os, sys
 
 url_signer = URLSigner(session)
 vaccines = {
@@ -123,11 +124,33 @@ def test_map():
 #######Test data charts
 @action('test_data')
 @action.uses(db, session, auth, 'test_data.html')
-def test_map():
-    return dict(USER_ID=USER_ID)
+def test_data():
+    # get data
+    
+    pRows = db(db.review.vaccine_type == 'Pfizer-BioNTech').select()
+    print(type(pRows))
+    newList = []
+    # fields = ["vaccine_type", "rating"]
+    fields = ["rating"]
 
-@action('get_data_url')
+    for row in pRows:
+        print(row)
+        # newList.append(row["vaccine_type"])
+        newList.append(row["rating"])
+        print(newList)
+    # dataPath = os.path.join(sys.path[0], "test_data.csv")
+    dataPath = "apps/room12/static/p_test_data.csv"
+    # F = ["vaccine_type", "rating"]
+    # with open(dataPath, 'w') as dumpfile:
+    #     pRows.export_to_csv_file(dumpfile, colnames = F)
+    with open(dataPath, 'w') as csvfile:
+        csvwriter = csv.writer(csvfile)
+        csvwriter.writerow(fields)
+        csvwriter.writerow(newList)
+    return dict(data = pRows, USER_ID=USER_ID, get_data_url = URL('get_data'), dataPath = dataPath)
+
+@action('get_data')
 @action.uses(db, session, auth)
-def test_map():
+def get_data():
     data_url = request.params.get('data_url')
     return dict(data_url=data_url)

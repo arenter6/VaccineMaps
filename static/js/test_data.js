@@ -10,6 +10,7 @@ let init = (app) => {
     // This is the Vue data.
     app.data = {
         data_url: "",
+        fileName: "",
     };
 
     app.enumerate = (a) => {
@@ -44,12 +45,12 @@ let init = (app) => {
     app.init = () => {
         // Put here any initialization code.
         // Typically this is a server GET call to load the data.
-        // axios.get(get_data_url)
-        // .then(function (response) 
-        // {
-        //   console.log(response.data.data);
-        //   data_url = response.data.data_url;
-        // });
+        axios.get(get_data_url)
+        .then(function (response) 
+        {
+          console.log(response.data.data);
+          data_url = response.data.data_url;
+        });
     };
     // Call to the initializer.
     app.init();
