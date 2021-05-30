@@ -1,17 +1,21 @@
 [[extend 'layout.html']]
-
 <style>
     [v-cloak] {
         display: none;
     }
 </style>
 <script src='https://d3js.org/d3.v4.min.js'></script>
+<<<<<<< HEAD
 
 <div class="content">
     <h1>Statistics</h1>
     <h3>Histogram</h3>
     <p>View how different vaccinations have been rated by our users</p>
 </div>
+=======
+<h1 class="title">Vaccine Ratings</h1>
+<h2 class="subtitle">Ratings Histogram</h2>
+>>>>>>> 2f8aebca393faf75c5daa3fcf52325d1f8ceb64b
 <div id="ratingviz" class="block"></div>
 <div class="section" id="vue-target" v-cloak>
     <!-- <div class="block"> -->
@@ -49,7 +53,6 @@
         .append("g")
         .attr("transform",
             "translate(" + margin.left + "," + margin.top + ")");
-
     // get the data
     d3.csv("test_dataa.csv", function (data) {
         // X axis
@@ -68,7 +71,6 @@
 
         // get data bins
         var bins = histogram(data);
-
         // Y axis: scale and draw:
         // var y = d3.scalePoint()
         var y = d3.scaleLinear()
@@ -108,8 +110,6 @@
 
     });
 </script>
-
-
 [[block page_scripts]]
 <!-- Loads the index-specific js for Vue -->
 <script>
