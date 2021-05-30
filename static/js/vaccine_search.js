@@ -27,10 +27,9 @@ let init = (app) => {
     app.long = 0; //Longitude
     app.city = ""; //Data that will be obtained from zipcode
     app.state = ""; 
-    app.zoomLevel = 0,
+    app.zoomLevel = 0;
     app.user_data = {};
     app.distance = 0;
-    app.vacc_type_flags = [0, 0, 0]; //Holds t/f values for vaccine types; i.e. pfizer, moderna, jj
 
     app.data = { //This is Vue data
         zipcode: null,
@@ -59,7 +58,6 @@ let init = (app) => {
     app.clear_search = function() {
         app.vue.zipcode = "";
         app.vue.invalid_zipcode_error = false;
-        app.vacc_type_flags = [0, 0, 0];
     };
 
     app.enumerate = (a) => {
@@ -99,323 +97,318 @@ let init = (app) => {
         return popup;
     };
 
-    app.search = function() {
-        if (app.vue.geoJson) {
-            console.log("Removed the map layer and table");
-            app.vue.rows = [];
-            app.vue.available_sites = 0;
-            app.vue.current_toggle = -1;
-            app.vue.geoJson.clearLayers();
-            layerGroup.clearLayers();
-        }
-        //TODO form validation for empty string
-        //Packaging Mapbox Geocoding API request using user zipcode
-        let gc_start = "https://api.mapbox.com/geocoding/v5/mapbox.places/";
-        let gc_end = ".json?country=US&access_token=";
-        let geocoding_request = gc_start.concat(app.vue.zipcode, gc_end, api_key);
-        
-        //First, fetch Geocoding API to obtain data for VaccineSpotter API
-        fetch(geocoding_request).then(function (response) {
-            if (response.ok) {
-                return response.json();
-            } else {
-                return Promise.reject(response);
-            }
-        }).then(function (result) {
-            console.log(result);
-            app.lati = result.features[0].geometry.coordinates[1];
-            app.long = result.features[0].geometry.coordinates[0];
-            //Store features that hold city and state
-            let cityState = result.features[0].context;
-            console.log('CITY STATE ELEMENTS');
-            //For each element id, if it matches 'place' and 'region' grab city and state
-            cityState.forEach(function(elem) {
-                //Split the id string at .(Dot); i.e. place. and region.
-                let str = elem.id.split('.')[0];
-                if (str === 'place') {
-                    app.city = elem.text;
-                    console.log('Found City:', app.city);
-                } else if (str === 'region') { //And region holds state
-                    app.state = elem.short_code.split('-')[1];
-                    console.log('Found State:', app.state);
-                };
-            });
-            //Packaging VaccineSpotter API request using user U.S.-state 
-            let vacc_sites_by_state = "https://www.vaccinespotter.org/api/v0/states/";
-            let resp_type = ".json";
-            let vaccination_sites_request = vacc_sites_by_state.concat(app.state, resp_type);
-            console.log("VACCINESPOTTER API REQ:", vaccination_sites_request);
-            //Fetch second API -- Vaccination Sites by State
-            return fetch(vaccination_sites_request);
-        }).then(function (response) {
-            if (response.ok) {
-                return response.json();
-            } else {
-                return Promise.reject(response);
-            }
-        }).then(function (userData) {
-            console.log("USERDATA", userData);
-            console.log("USERDATA TYPE", typeof userData);
-            app.user_data = userData;
+    app.search = function () {
+        if (app.vue.zipcode !== "") {
+            checkGeoJSON();
+            //TODO form validation for empty string
+            //Packaging Mapbox Geocoding API request using user zipcode
+            let gc_start = "https://api.mapbox.com/geocoding/v5/mapbox.places/";
+            let gc_end = ".json?country=US&access_token=";
+            let geocoding_request = gc_start.concat(app.vue.zipcode, gc_end, api_key);
 
-            //Here we adjust zoom levels based on the mile radius selected for search
-            if (app.vue.range.number === 1) {
-                console.log('range:', app.vue.range.number);
-                app.zoomLevel = 15;
-            } else if (app.vue.range.number === 5 || app.vue.range.number === 10) {
-                console.log('range:', app.vue.range.number);
-                app.zoomLevel = 12;
-            } else if (app.vue.range.number === 25) {
-                console.log('range:', app.vue.range.number);
-                app.zoomLevel = 10;
-            } else if (app.vue.range.number === 50) {
-                console.log('range:', app.vue.range.number);
-                app.zoomLevel = 9;
-            }
-            app.vue.center = [app.lati, app.long]; //Sets searched center and zoom for later reference with table
-            app.vue.zoom = app.zoomLevel;
-            map.flyTo([app.lati, app.long], app.zoomLevel); //Moves to searched location
-            
-            var distance = app.vue.range.number * 1600; //Converts miles from range input to meters
-            app.distance = distance;
-            console.log("The radius is " + distance + " meters");
-            
+            //First, fetch Geocoding API to obtain data for VaccineSpotter API
+            fetch(geocoding_request).then(function (response) {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    return Promise.reject(response);
+                }
+            }).then(function (result) {
+                console.log(result);
+                app.lati = result.features[0].geometry.coordinates[1];
+                app.long = result.features[0].geometry.coordinates[0];
+                //Store features that hold city and state
+                let cityState = result.features[0].context;
+                console.log('CITY STATE ELEMENTS');
+                //For each element id, if it matches 'place' and 'region' grab city and state
+                cityState.forEach(function (elem) {
+                    //Split the id string at .(Dot); i.e. place. and region.
+                    let str = elem.id.split('.')[0];
+                    if (str === 'place') {
+                        app.city = elem.text;
+                        console.log('Found City:', app.city);
+                    } else if (str === 'region') { //And region holds state
+                        app.state = elem.short_code.split('-')[1];
+                        console.log('Found State:', app.state);
+                    };
+                });
+                //Packaging VaccineSpotter API request using user U.S.-state 
+                let vacc_sites_by_state = "https://www.vaccinespotter.org/api/v0/states/";
+                let resp_type = ".json";
+                let vaccination_sites_request = vacc_sites_by_state.concat(app.state, resp_type);
+                console.log("VACCINESPOTTER API REQ:", vaccination_sites_request);
+                //Fetch second API -- Vaccination Sites by State
+                return fetch(vaccination_sites_request);
+            }).then(function (response) {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    return Promise.reject(response);
+                }
+            }).then(function (userData) {
+                console.log("USERDATA", userData);
+                console.log("USERDATA TYPE", typeof userData);
+                app.user_data = userData;
 
-            console.log('LOAD_RATINGS:', load_ratings_url);
+                //Here we adjust zoom levels based on the mile radius selected for search
+                if (app.vue.range.number === 1) {
+                    console.log('range:', app.vue.range.number);
+                    app.zoomLevel = 15;
+                } else if (app.vue.range.number === 5 || app.vue.range.number === 10) {
+                    console.log('range:', app.vue.range.number);
+                    app.zoomLevel = 12;
+                } else if (app.vue.range.number === 25) {
+                    console.log('range:', app.vue.range.number);
+                    app.zoomLevel = 10;
+                } else if (app.vue.range.number === 50) {
+                    console.log('range:', app.vue.range.number);
+                    app.zoomLevel = 9;
+                }
+                app.vue.center = [app.lati, app.long]; //Sets searched center and zoom for later reference with table
+                app.vue.zoom = app.zoomLevel;
+                map.flyTo([app.lati, app.long], app.zoomLevel); //Moves to searched location
 
-            return axios.get(load_ratings_url, {params: {"state": app.state}});
-        
-        }).then(function(ratingsRequest) {
-            let ratingsData = ratingsRequest.data;
-            console.log('ratingsData:', ratingsData);
-            app.vue.geoJson = L.geoJson(app.user_data, //From the json request, we parse information according to our needs and display onto the map
-                {
-                    onEachFeature: function (feature, layer) { //For every location, we set the appropriate information to rows so html can iterate nicely
-                        let distanceToInput = roundToTwo((L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long]))) / 1600);
-                        let available = "No";
-                        if (feature.properties.appointments_available) {
-                            app.vue.available_sites++;
-                            available = "Yes";
-                        }
-                        let theCity = feature.properties.city.charAt(0) + feature.properties.city.substring(1).toLowerCase();
-                        let theAddress = toTitleCase(feature.properties.address);
-                        let addressSearch = theAddress.split(' ').join('+');
-                        addressSearch = "https://www.google.com/maps/place/" + addressSearch + "+" + theCity;
-                        let rating = 0;
-                        let addressRemovedAbbreviation = feature.properties.address.toLowerCase().split(" ").slice(0, -1).join(" "); //Used in case street abbreviation is not used
-                        if (addressRemovedAbbreviation in ratingsData.ratings) {
-                            rating = ratingsData.ratings[addressRemovedAbbreviation].average_rating;
-                        }
+                var distance = app.vue.range.number * 1600; //Converts miles from range input to meters
+                app.distance = distance;
+                console.log("The radius is " + distance + " meters");
 
-                        layer._leaflet_id = feature.properties.id;
-                        app.vue.rows.push({ //Adds location to array with information
-                            id: feature.properties.id,
-                            provider: feature.properties.provider_brand_name,
-                            address: theAddress,
-                            addressLink: addressSearch,
-                            city: toTitleCase(theCity),
-                            state: app.state,
-                            zipcode: feature.properties.postal_code,
-                            distance: distanceToInput,
-                            rating: rating,
-                            availability: available,
-                            marker: L.marker([feature.geometry.coordinates[1], feature.geometry.coordinates[0]]), //Used to open popup
-                            highlight: false, //For displaying table use
-                            toggle: false, //For displaying popup usage and restoring map view
-                        });
-                        app.vue.rows.sort(function (a, b) { //Sorts the locations by increasing distance to input
-                            let distanceA = a.distance;
-                            let distanceB = b.distance;
-                            if (distanceA < distanceB) {
-                                return -1;
-                            } else if (distanceA > distanceB) {
-                                return 1;
+
+                console.log('LOAD_RATINGS:', load_ratings_url);
+
+                return axios.get(load_ratings_url, { params: { "state": app.state } });
+
+            }).then(function (ratingsRequest) {
+                let ratingsData = ratingsRequest.data;
+                console.log('ratingsData:', ratingsData);
+                app.vue.geoJson = L.geoJson(app.user_data, //From the json request, we parse information according to our needs and display onto the map
+                    {
+                        onEachFeature: function (feature, layer) { //For every location, we set the appropriate information to rows so html can iterate nicely
+                            let distanceToInput = roundToTwo((L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long]))) / 1600);
+                            let available = "No";
+                            if (feature.properties.appointments_available) {
+                                app.vue.available_sites++;
+                                available = "Yes";
                             }
-                            return 0;
-                        });
-                        app.enumerate(app.vue.rows);
-                        app.vue.page_initialized = true;
-                    },
-                    pointToLayer: function (feature, latlng) { //returns the respective icon according to availability, sets popups and stores marker for later use
-                        let green = L.icon({
-                            iconUrl: 'icons/green.png',
-                            shadowUrl: 'icons/shadow.png',
-                            iconSize: [25, 41], // width and height of the image in pixels
-                            shadowSize: [50, 30], // width, height of optional shadow image
-                            iconAnchor: [12, 12], // point of the icon which will correspond to marker's location
-                            shadowAnchor: [12, 6],  // anchor point of the shadow. should be offset
-                            popupAnchor: [0, 0] // point from which the popup should open relative to the iconAnchor
-                        });
-                        let red = L.icon({
-                            iconUrl: 'icons/red.png',
-                            shadowUrl: 'icons/shadow.png',
-                            iconSize: [25, 41],
-                            shadowSize: [50, 30],
-                            iconAnchor: [12, 12],
-                            shadowAnchor: [12, 6],
-                            popupAnchor: [0, 0]
-                        });
-                        var distanceToInput = roundToTwo((L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long]))) / 1600);
-                        var popup = "<b>" + feature.properties.name + "</b>"
-                            + "<h2>" + "Provider: " + feature.properties.provider_brand_name + "</h2>"
-                            + "<h2>" + "Address: " + toTitleCase(feature.properties.address) + "</h2>"
-                            + "<h2>" + "City: " + toTitleCase(feature.properties.city) + "</h2>"
-                            + "<h2>" + "Zip Code: " + feature.properties.postal_code + "</h2>"
-                            + "<h2>" + "Distance: " + distanceToInput + " miles</h2>";
-                        //Insert ratings here
-                        let address = feature.properties.address.toLowerCase().split(" ").slice(0, -1).join(" "); //Used in case street abbreviation is not used
-                        if (address in ratingsData.ratings) {
-                            popup += "<h2'>" + "Rating: " + ratingsData.ratings[address].average_rating + " stars</h2>";
-                        } else {
-                            popup += "<h2 class='has-text-warning'>" + "Rating: Not yet rated</h2>";
-                        }
-
-                        //Since VaccineSpotterAPI is spotty on Costco & Safeway locations; vaccine supply is currently high; redirect users to book appt
-                        if (feature.properties.provider_brand_name === 'Costco' || feature.properties.provider_brand_name === 'Safeway'){
-                            //console.log('Found a:', feature.properties.provider_brand_name);
-                            //console.log('Vaccines avail:', feature.properties.appointment_vaccine_types);
-                            feature.properties.appointments_available = true;
-                            if (feature.properties.appointment_vaccine_types === null) {
-                                console.log('Provider', feature.properties.provider_brand_name);
-                                console.log('@', feature.properties.adddress);
-                                console.log('REPORTED NULL');
-                                const source = {'unknown': true};
-                                feature.properties.appointment_vaccine_types = Object.assign(feature.properties.appointment_vaccine_types, source);
-                                console.log('POST ADDING APP_VACC_TYPES', feature.properties.appointment_vaccine_types);
+                            let theCity = feature.properties.city.charAt(0) + feature.properties.city.substring(1).toLowerCase();
+                            let theAddress = toTitleCase(feature.properties.address);
+                            let addressSearch = theAddress.split(' ').join('+');
+                            addressSearch = "https://www.google.com/maps/place/" + addressSearch + "+" + theCity;
+                            let rating = 0;
+                            let addressRemovedAbbreviation = feature.properties.address.toLowerCase().split(" ").slice(0, -1).join(" "); //Used in case street abbreviation is not used
+                            if (addressRemovedAbbreviation in ratingsData.ratings) {
+                                rating = ratingsData.ratings[addressRemovedAbbreviation].average_rating;
                             }
-                        }
 
-                        let apps_available = feature.properties.appointments_available;
-                        if (apps_available) { //Appointments are available
-                            //Star sub-header indicating availability
-                            popup += "<h2 class='has-text-success-dark'><b>Available</b></h2>";
-                            //Call vaccine_types_to_layer to see if location has vaccine types data to add to popup
-                            let app_vacc_types = feature.properties.appointment_vaccine_types;
-                            popup = app.vaccine_types_to_layer(app_vacc_types, popup);
-                            //Link for booking appointment at specified location
-                            popup += "<a target='_blank' href='" + feature.properties.url + "'>" + "Book an Appointment" + "</a>";
-
-                            app.vue.sites[feature.properties.id] = L.marker(latlng, { icon: green }).addTo(map).bindPopup(popup).addTo(layerGroup).addTo(layerGroup);
-                            return L.marker(latlng, { icon: green }).addTo(map).bindPopup(popup).addTo(layerGroup).addTo(layerGroup);
-
-                        } else { //No appointments available
-                            popup += "<h2 class='has-text-danger'>Not Available</h2>";
-
-                            app.vue.sites[feature.properties.id] = L.marker(latlng, { icon: red }).addTo(map).bindPopup(popup).addTo(layerGroup);
-                            return L.marker(latlng, { icon: red }).addTo(map).bindPopup(popup).addTo(layerGroup).addTo(layerGroup);
-                        }
-                    }, // Sets icon for every location
-                    filter: function (feature) { // Filters out locations that are not within distance
-                        //console.log('LIVE FROM FILTER! Here is feature:', feature);
-
-                        //All vaccine type options selected -- Default
-                        if ((app.vue.pfizer_selected) && (app.vue.moderna_selected) && (app.vue.jj_selected)) {
-                            //console.log('ALL WERE SELECTED!');
-                            if (L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long])) <= app.distance) {
-                                return true;
+                            layer._leaflet_id = feature.properties.id;
+                            app.vue.rows.push({ //Adds location to array with information
+                                id: feature.properties.id,
+                                provider: feature.properties.provider_brand_name,
+                                address: theAddress,
+                                addressLink: addressSearch,
+                                city: toTitleCase(theCity),
+                                state: app.state,
+                                zipcode: feature.properties.postal_code,
+                                distance: distanceToInput,
+                                rating: rating,
+                                availability: available,
+                                marker: L.marker([feature.geometry.coordinates[1], feature.geometry.coordinates[0]]), //Used to open popup
+                                highlight: false, //For displaying table use
+                                toggle: false, //For displaying popup usage and restoring map view
+                            });
+                            app.vue.rows.sort(function (a, b) { //Sorts the locations by increasing distance to input
+                                let distanceA = a.distance;
+                                let distanceB = b.distance;
+                                if (distanceA < distanceB) {
+                                    return -1;
+                                } else if (distanceA > distanceB) {
+                                    return 1;
+                                }
+                                return 0;
+                            });
+                            app.enumerate(app.vue.rows);
+                            app.vue.page_initialized = true;
+                        },
+                        pointToLayer: function (feature, latlng) { //returns the respective icon according to availability, sets popups and stores marker for later use
+                            let green = L.icon({
+                                iconUrl: 'icons/green.png',
+                                shadowUrl: 'icons/shadow.png',
+                                iconSize: [25, 41], // width and height of the image in pixels
+                                shadowSize: [50, 30], // width, height of optional shadow image
+                                iconAnchor: [12, 12], // point of the icon which will correspond to marker's location
+                                shadowAnchor: [12, 6],  // anchor point of the shadow. should be offset
+                                popupAnchor: [0, 0] // point from which the popup should open relative to the iconAnchor
+                            });
+                            let red = L.icon({
+                                iconUrl: 'icons/red.png',
+                                shadowUrl: 'icons/shadow.png',
+                                iconSize: [25, 41],
+                                shadowSize: [50, 30],
+                                iconAnchor: [12, 12],
+                                shadowAnchor: [12, 6],
+                                popupAnchor: [0, 0]
+                            });
+                            var distanceToInput = roundToTwo((L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long]))) / 1600);
+                            var popup = "<b>" + feature.properties.name + "</b>"
+                                + "<h2>" + "Provider: " + feature.properties.provider_brand_name + "</h2>"
+                                + "<h2>" + "Address: " + toTitleCase(feature.properties.address) + "</h2>"
+                                + "<h2>" + "City: " + toTitleCase(feature.properties.city) + "</h2>"
+                                + "<h2>" + "Zip Code: " + feature.properties.postal_code + "</h2>"
+                                + "<h2>" + "Distance: " + distanceToInput + " miles</h2>";
+                            //Insert ratings here
+                            let address = feature.properties.address.toLowerCase().split(" ").slice(0, -1).join(" "); //Used in case street abbreviation is not used
+                            if (address in ratingsData.ratings) {
+                                popup += "<h2'>" + "Rating: " + ratingsData.ratings[address].average_rating + " stars</h2>";
                             } else {
-                                return false;
+                                popup += "<h2 class='has-text-warning'>" + "Rating: Not yet rated</h2>";
+                            }
+
+                            //Since VaccineSpotterAPI is spotty on Costco & Safeway locations; vaccine supply is currently high; redirect users to book appt
+                            if (feature.properties.provider_brand_name === 'Costco' || feature.properties.provider_brand_name === 'Safeway') {
+                                //console.log('Found a:', feature.properties.provider_brand_name);
+                                //console.log('Vaccines avail:', feature.properties.appointment_vaccine_types);
+                                feature.properties.appointments_available = true;
+                                if (feature.properties.appointment_vaccine_types === null) {
+                                    console.log('Provider', feature.properties.provider_brand_name);
+                                    console.log('@', feature.properties.adddress);
+                                    console.log('REPORTED NULL');
+                                    const source = { 'unknown': true };
+                                    feature.properties.appointment_vaccine_types = Object.assign(feature.properties.appointment_vaccine_types, source);
+                                    console.log('POST ADDING APP_VACC_TYPES', feature.properties.appointment_vaccine_types);
+                                }
+                            }
+
+                            let apps_available = feature.properties.appointments_available;
+                            if (apps_available) { //Appointments are available
+                                //Star sub-header indicating availability
+                                popup += "<h2 class='has-text-success-dark'><b>Available</b></h2>";
+                                //Call vaccine_types_to_layer to see if location has vaccine types data to add to popup
+                                let app_vacc_types = feature.properties.appointment_vaccine_types;
+                                popup = app.vaccine_types_to_layer(app_vacc_types, popup);
+                                //Link for booking appointment at specified location
+                                popup += "<a target='_blank' href='" + feature.properties.url + "'>" + "Book an Appointment" + "</a>";
+
+                                app.vue.sites[feature.properties.id] = L.marker(latlng, { icon: green }).addTo(map).bindPopup(popup).addTo(layerGroup).addTo(layerGroup);
+                                return L.marker(latlng, { icon: green }).addTo(map).bindPopup(popup).addTo(layerGroup).addTo(layerGroup);
+
+                            } else { //No appointments available
+                                popup += "<h2 class='has-text-danger'>Not Available</h2>";
+
+                                app.vue.sites[feature.properties.id] = L.marker(latlng, { icon: red }).addTo(map).bindPopup(popup).addTo(layerGroup);
+                                return L.marker(latlng, { icon: red }).addTo(map).bindPopup(popup).addTo(layerGroup).addTo(layerGroup);
+                            }
+                        }, // Sets icon for every location
+                        filter: function (feature) { // Filters out locations that are not within distance
+                            //console.log('LIVE FROM FILTER! Here is feature:', feature);
+
+                            //All vaccine type options selected -- Default
+                            if ((app.vue.pfizer_selected) && (app.vue.moderna_selected) && (app.vue.jj_selected)) {
+                                //console.log('ALL WERE SELECTED!');
+                                if (L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long])) <= app.distance) {
+                                    return true;
+                                } else {
+                                    return false;
+                                }
+                            }
+
+                            var appointment_vacc_types = feature.properties.appointment_vaccine_types;
+
+                            //These are the Object keys we will be looking for after making arr. of keys
+                            const unknown_vacc = (element) => element === 'unknown';
+                            const pfizer = (element) => element === 'pfizer';
+                            const moderna = (element) => element === 'moderna';
+                            const jj = (element) => element === 'jj';
+
+                            //Handle single choices first
+                            if ((app.vue.pfizer_selected) && !(app.vue.moderna_selected) && !(app.vue.jj_selected)) { //Pfizer alone
+                                console.log('ONLY PFIZER SELECTED');
+                                //If this location has contents for appointment vaccine types
+                                if ((typeof appointment_vacc_types === 'object') && (appointment_vacc_types !== null)) {
+                                    //console.log('IS AN OBJECT AND NOT NULL');
+                                    //Assign array with object keys; i.e. 'unknown', 'pfizer', 'moderna', 'jj'
+                                    var app_vacc_types_arr = Object.keys(appointment_vacc_types);
+                                    //Return 'pfizer' and 'unknown' within range
+                                    if (app_vacc_types_arr.some(pfizer) || app_vacc_types_arr.some(unknown_vacc)) {
+                                        //if (app_vacc_types_arr.some(pfizer)) {
+                                        return (L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long])) <= app.distance);
+                                    }
+                                    //Else if, location contents null
+                                } else if ((typeof appointment_vacc_types === 'object') && (appointment_vacc_types === null)) {
+                                    //console.log('IS AN OBJECT AND NULL');
+                                    //Return locations within range
+                                    return (L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long])) <= app.distance);
+                                }
+                            } else if (!(app.vue.pfizer_selected) && (app.vue.moderna_selected) && !(app.vue.jj_selected)) { //Moderna alone
+                                console.log('ONLY MODERNA SELECTED');
+                                if ((typeof appointment_vacc_types === 'object') && (appointment_vacc_types !== null)) {
+                                    var app_vacc_types_arr = Object.keys(appointment_vacc_types);
+                                    if (app_vacc_types_arr.some(moderna) || app_vacc_types_arr.some(unknown_vacc)) {
+                                        return (L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long])) <= app.distance);
+                                    }
+                                } else if ((typeof appointment_vacc_types === 'object') && (appointment_vacc_types === null)) {
+                                    return (L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long])) <= app.distance);
+                                }
+                            } else if (!(app.vue.pfizer_selected) && !(app.vue.moderna_selected) && (app.vue.jj_selected)) { //JJ alone
+                                console.log('ONLY JJ SELECTED');
+                                if ((typeof appointment_vacc_types === 'object') && (appointment_vacc_types !== null)) {
+                                    var app_vacc_types_arr = Object.keys(appointment_vacc_types);
+                                    if (app_vacc_types_arr.some(jj) || app_vacc_types_arr.some(unknown_vacc)) {
+                                        return (L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long])) <= app.distance);
+                                    }
+                                } else if ((typeof appointment_vacc_types === 'object') && (appointment_vacc_types === null)) {
+                                    return (L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long])) <= app.distance);
+                                }
+                            }
+
+                            //All options involving Pfizer; i.e. Pfizer (alone), Pfizer & Moderna, and Pfizer & JJ,
+                            if ((app.vue.pfizer_selected) && (app.vue.moderna_selected) && !(app.vue.jj_selected)) {
+                                console.log('PFIZER & MODERNA SELECTED');
+                                if ((typeof appointment_vacc_types === 'object') && (appointment_vacc_types !== null)) {
+                                    var app_vacc_types_arr = Object.keys(appointment_vacc_types);
+                                    if (app_vacc_types_arr.some(pfizer) || app_vacc_types_arr.some(moderna) || app_vacc_types_arr.some(unknown_vacc)) {
+                                        return (L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long])) <= app.distance);
+                                    }
+                                } else if ((typeof appointment_vacc_types === 'object') && (appointment_vacc_types === null)) {
+                                    return (L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long])) <= app.distance);
+                                }
+
+                            } else if ((app.vue.pfizer_selected) && !(app.vue.moderna_selected) && (app.vue.jj_selected)) {
+                                console.log('PFIZER & JJ SELECTED');
+                                if ((typeof appointment_vacc_types === 'object') && (appointment_vacc_types !== null)) {
+                                    var app_vacc_types_arr = Object.keys(appointment_vacc_types);
+                                    if (app_vacc_types_arr.some(pfizer) || app_vacc_types_arr.some(jj) || app_vacc_types_arr.some(unknown_vacc)) {
+                                        return (L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long])) <= app.distance);
+                                    }
+                                } else if ((typeof appointment_vacc_types === 'object') && (appointment_vacc_types === null)) {
+                                    return (L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long])) <= app.distance);
+                                }
+
+                            } else if (!(app.vue.pfizer_selected) && (app.vue.moderna_selected) && (app.vue.jj_selected)) {
+                                console.log('MODERNA & JJ SELECTED');
+                                if ((typeof appointment_vacc_types === 'object') && (appointment_vacc_types !== null)) {
+                                    var app_vacc_types_arr = Object.keys(appointment_vacc_types);
+                                    if (app_vacc_types_arr.some(pfizer) || app_vacc_types_arr.some(jj) || app_vacc_types_arr.some(unknown_vacc)) {
+                                        return (L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long])) <= app.distance);
+                                    }
+                                } else if ((typeof appointment_vacc_types === 'object') && (appointment_vacc_types === null)) {
+                                    return (L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long])) <= app.distance);
+                                }
                             }
                         }
+                    }).addTo(map);
 
-                        var appointment_vacc_types = feature.properties.appointment_vaccine_types;
-                        
-                        //These are the Object keys we will be looking for after making arr. of keys
-                        const unknown_vacc = (element) => element === 'unknown';
-                        const pfizer = (element) => element === 'pfizer';
-                        const moderna = (element) => element === 'moderna';
-                        const jj = (element) => element === 'jj';
+                //app.vue.invalid_vacc_search ? (app.vue.available_sites == 0) : (app.vue.available_sites > 0);
+                if (app.vue.available_sites == 0) {
+                    app.vue.invalid_vacc_search = true;
+                } else {
+                    app.vue.invalid_vacc_search = false;
+                }
+                app.clear_search(); //Clears zip code search form
+            }).catch(function (error) { //Catches errors for all API calls
+                console.warn(error);
+                app.vue.invalid_zipcode_error = true;
+            });
+        }
 
-                        //Handle single choices first
-                        if ((app.vue.pfizer_selected) && !(app.vue.moderna_selected) && !(app.vue.jj_selected)) { //Pfizer alone
-                            console.log('ONLY PFIZER SELECTED');
-                            //If this location has contents for appointment vaccine types
-                            if ((typeof appointment_vacc_types === 'object') && (appointment_vacc_types !== null)) {
-                                //console.log('IS AN OBJECT AND NOT NULL');
-                                //Assign array with object keys; i.e. 'unknown', 'pfizer', 'moderna', 'jj'
-                                var app_vacc_types_arr = Object.keys(appointment_vacc_types);
-                                //Return 'pfizer' and 'unknown' within range
-                                if (app_vacc_types_arr.some(pfizer) || app_vacc_types_arr.some(unknown_vacc)) {
-                                //if (app_vacc_types_arr.some(pfizer)) {
-                                    return (L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long])) <= app.distance);
-                                }
-                                //Else if, location contents null
-                            } else if ((typeof appointment_vacc_types === 'object') && (appointment_vacc_types === null)) {
-                                //console.log('IS AN OBJECT AND NULL');
-                                //Return locations within range
-                                return (L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long])) <= app.distance);
-                            }
-                        } else if (!(app.vue.pfizer_selected) && (app.vue.moderna_selected) && !(app.vue.jj_selected)) { //Moderna alone
-                            console.log('ONLY MODERNA SELECTED');
-                            if ((typeof appointment_vacc_types === 'object') && (appointment_vacc_types !== null)) {
-                                var app_vacc_types_arr = Object.keys(appointment_vacc_types);
-                                if (app_vacc_types_arr.some(moderna) || app_vacc_types_arr.some(unknown_vacc)) {
-                                    return (L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long])) <= app.distance);
-                                }
-                            } else if ((typeof appointment_vacc_types === 'object') && (appointment_vacc_types === null)) {
-                                return (L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long])) <= app.distance);
-                            }
-                        } else if (!(app.vue.pfizer_selected) && !(app.vue.moderna_selected) && (app.vue.jj_selected)) { //JJ alone
-                            console.log('ONLY JJ SELECTED');
-                            if ((typeof appointment_vacc_types === 'object') && (appointment_vacc_types !== null)) {
-                                var app_vacc_types_arr = Object.keys(appointment_vacc_types);
-                                if (app_vacc_types_arr.some(jj) || app_vacc_types_arr.some(unknown_vacc)) {
-                                    return (L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long])) <= app.distance);
-                                }
-                            } else if ((typeof appointment_vacc_types === 'object') && (appointment_vacc_types === null)) {
-                                return (L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long])) <= app.distance);
-                            }
-                        }
-
-                        //All options involving Pfizer; i.e. Pfizer (alone), Pfizer & Moderna, and Pfizer & JJ,
-                        if ((app.vue.pfizer_selected) && (app.vue.moderna_selected) && !(app.vue.jj_selected)) {
-                            console.log('PFIZER & MODERNA SELECTED');
-                            if ((typeof appointment_vacc_types === 'object') && (appointment_vacc_types !== null)) {
-                                var app_vacc_types_arr = Object.keys(appointment_vacc_types);
-                                if (app_vacc_types_arr.some(pfizer) || app_vacc_types_arr.some(moderna) || app_vacc_types_arr.some(unknown_vacc)) {
-                                    return (L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long])) <= app.distance);
-                                }
-                            } else if ((typeof appointment_vacc_types === 'object') && (appointment_vacc_types === null)) {
-                                return (L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long])) <= app.distance);
-                            }
-                            
-                        } else if ((app.vue.pfizer_selected) && !(app.vue.moderna_selected) && (app.vue.jj_selected)) {
-                            console.log('PFIZER & JJ SELECTED');
-                            if ((typeof appointment_vacc_types === 'object') && (appointment_vacc_types !== null)) {
-                                var app_vacc_types_arr = Object.keys(appointment_vacc_types);
-                                if (app_vacc_types_arr.some(pfizer) || app_vacc_types_arr.some(jj) || app_vacc_types_arr.some(unknown_vacc)) {
-                                    return (L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long])) <= app.distance);
-                                }
-                            } else if ((typeof appointment_vacc_types === 'object') && (appointment_vacc_types === null)) {
-                                return (L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long])) <= app.distance);
-                            }
-                    
-                        } else if (!(app.vue.pfizer_selected) && (app.vue.moderna_selected) && (app.vue.jj_selected)) {
-                            console.log('MODERNA & JJ SELECTED');
-                            if ((typeof appointment_vacc_types === 'object') && (appointment_vacc_types !== null)) {
-                                var app_vacc_types_arr = Object.keys(appointment_vacc_types);
-                                if (app_vacc_types_arr.some(pfizer) || app_vacc_types_arr.some(jj) || app_vacc_types_arr.some(unknown_vacc)) {
-                                    return (L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long])) <= app.distance);
-                                }
-                            } else if ((typeof appointment_vacc_types === 'object') && (appointment_vacc_types === null)) {
-                                return (L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long])) <= app.distance);
-                            }
-                        }
-                    }
-                }).addTo(map);
-                
-            //app.vue.invalid_vacc_search ? (app.vue.available_sites == 0) : (app.vue.available_sites > 0);
-            if (app.vue.available_sites == 0) {
-                app.vue.invalid_vacc_search = true;
-            } else {
-                app.vue.invalid_vacc_search = false;
-            }
-            app.clear_search(); //Clears zip code search form
-        }).catch(function (error) { //Catches errors for all API calls
-            console.warn(error);
-            app.vue.invalid_zipcode_error = true;
-        });
-        
     };
 
     app.highlight = function(id, hovering) { //Highlights the hovered row in table
@@ -537,18 +530,47 @@ let init = (app) => {
 
 init(app);
 
-//Creates instance of map and sets default view to UCSC Campus w/ zoom level 13
-var map = L.map('mapid').setView([36.9881, -122.0582], 13);
 
-//Initializes the map layer
-L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
-    attribution: 'Room 12 Prototype Mark II Alpha 0.91 Beta 4.20 Demo 6 Area 51 Operation Made You Look', //Gives credit and copyright attribute to OpenStreetMaps and Leaflet
+var mapboxURL = 'https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}';
+
+//Define map styles; light and dark modes
+var light = L.tileLayer(mapboxURL, { 
+    id: 'mapbox/navigation-day-v1',
+    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors,' 
+                + 'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>, Data <a href="https://www.vaccinespotter.org/api/">VaccineSpotter</a>',
     maxZoom: 18,
     tileSize: 512,
     zoomOffset: -1,
-    id: 'mapbox/streets-v11',
     accessToken: api_key //Use your own API key to get info from OpenStreetMaps
+}), dark = L.tileLayer(mapboxURL, { 
+    id: 'mapbox/navigation-night-v1',
+    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors,' 
+                + 'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>, Data <a href="https://www.vaccinespotter.org/api/">VaccineSpotter</a>',
+    maxZoom: 18,
+    tileSize: 512,
+    zoomOffset: -1,
+    accessToken: api_key //Use your own API key to get info from OpenStreetMaps
+});
+
+//Object keys define tileLayer options
+var baseMaps = {
+    "Light": light,
+    "Dark": dark
+};
+
+//Creates instance of map and sets default view to UCSC Campus w/ zoom level 13
+var map = L.map('mapid', {
+    zoom: 13,
+    //layer: [light, dark],
+}).setView([36.9881, -122.0582], 13);
+
+//Give the user ability to swtich betwween two style modes; light and dark
+L.control.layers(baseMaps, null, {
+    collapsed: false
 }).addTo(map);
+
+//Default map is nagivation-day-v1; light
+light.addTo(map);
 
 var layerGroup = L.layerGroup().addTo(map);
 
@@ -556,13 +578,54 @@ var layerGroup = L.layerGroup().addTo(map);
 var marker = L.marker([36.9881, -122.0582]).addTo(map); //Starting location
 marker.bindPopup("<b>University of California Santa Cruz</b><br>Home Sweet Home");
 
+//For Dynamic searching; When the user double-clicks on any area of the map, 
+//A reverse geocoding request is done to retrieve zipcode from coordinates obtained from click
+map.on('click', function(e) {
+    var coord = e.latlng;    
+    let lati_str = coord.lat.toString(); //Make coordinates into string for request
+    let long_str = coord.lng.toString();
+    
+    //console.log("You clicked the map at latitude: " + lati_str + " and longitude: " + long_str);
+    //Package request again, this time specifying zipcode
+    let gc_start = "https://api.mapbox.com/geocoding/v5/mapbox.places/";
+    let gc_end = ".json?types=postcode&country=US&access_token=";
+    let comma = ",";
+    let reverse_geocoding_request = gc_start.concat(long_str, comma, lati_str, gc_end, api_key);
+    //console.log('reverse_geocoding req:', reverse_geocoding_request);
+    fetch(reverse_geocoding_request).then(function (response) {
+        if (response.ok) {
+            return response.json();
+        } else {
+            return Promise.reject(response);
+        }
+    }).then(function (result) {
+        //Get zipcode from features
+        app.vue.zipcode = result.features[0].text;
+        //console.log('ZIPCODE RETRIEVED:', app.vue.zipcode);
+    })
+    //If geoJSON layer is active -- reset; to prevent points from building up
+    checkGeoJSON();
+    //Call search()
+    app.search();
+});
+
+checkGeoJSON = function() {
+    if (app.vue.geoJson) {
+        console.log("Removed the map layer and table");
+        app.vue.rows = [];
+        app.vue.available_sites = 0;
+        app.vue.current_toggle = -1;
+        app.vue.geoJson.clearLayers();
+        layerGroup.clearLayers();
+    }
+};
+
 function roundToTwo(num) { //returns a float rounded to the hundredths place
     return +(Math.round(num + "e+2")  + "e-2");
-}
+};
 
 function toTitleCase(str) { //Changes a string to capitalize every word's first letter and lowercase other
     return str.replace(/\w\S*/g, function(txt){
         return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
     });
 };
-
