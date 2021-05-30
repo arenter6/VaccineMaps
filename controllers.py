@@ -250,7 +250,6 @@ def load_reviews():
 @action('test_data')
 @action.uses(db, session, auth, 'test_data.html')
 def test_data():
-<<<<<<< HEAD
     # get data
     
     pRows = db(db.review.vaccine_type == 'Pfizer-BioNTech').select()
@@ -276,13 +275,6 @@ def test_data():
     return dict(data = pRows, USER_ID=USER_ID, get_data_url = URL('get_data'), dataPath = dataPath)
 
 @action('get_data')
-=======
-    return dict(USER_ID=USER_ID,
-                load_reviews_url=URL('load_reviews', signer=url_signer),
-           )
-
-@action('get_data_url')
->>>>>>> 2f8aebca393faf75c5daa3fcf52325d1f8ceb64b
 @action.uses(db, session, auth)
 def get_data():
     data_url = request.params.get('data_url')
