@@ -71,53 +71,8 @@ let init = (app) => {
         return a;
     };
 
-
-    app.filter_by_vaccine_types_general = function (obj, feature, ops) {
-        //These are the Object keys we will be looking for after making arr. of keys
-        const unknown_vacc = (element) => element === 'unknown';
-        const pfizer = (element) => element === 'pfizer';
-        const moderna = (element) => element === 'moderna';
-        const jj = (element) => element === 'jj';
-        
-        console.log('OPTIONS:', ops);
-
-        ops.forEach(function (elem, index) {
-
-            if ((elem == 1) && (index == 0)) {
-                if ((typeof obj === 'object') && (obj === null)) {
-                    //console.log('IS AN OBJECT AND NULL');
-                    //Return locations within range
-                    return (L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long])) <= app.distance);
-                } else if ((typeof obj === 'object') && (obj !== null)) {
-                    var app_vacc_types_arr = Object.keys(obj);
-
-                    if ((app_vacc_types_arr.some(pfizer)) || app_vacc_types_arr.some(unknown_vacc)) {
-                        //console.log('filter_by: some.unknown & some.pfizer');
-                        return (L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long])) <= app.distance);
-                    }
-                }
-            } else if (elem === 1 && index === 1) {
-                if (app_vacc_types_arr.some(moderna) || app_vacc_types_arr.some(unknown_vacc)) {
-                    return (L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long])) <= app.distance);
-                }
-            } else if (elem === 1 && index === 2) {
-                if (app_vacc_types_arr.some(jj) || app_vacc_types_arr.some(unknown_vacc)) {
-                    return (L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long])) <= app.distance);
-                }
-            }
-        });
-
-            /*
-            if (app_vacc_types_arr.some(unknown_vacc)) {
-                return (L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long])) <= app.distance);
-            }*/
-        //}
-    };
-
     app.vaccine_types_to_layer = function(app_vacc_types, popup){
- 
         vacc_types_arr = Object.keys(app_vacc_types);
-        
         //console.log('VACC_TYPES', vacc_types_arr);
         //If vaccine types arr holds keys
         if (vacc_types_arr.length > 0) {
@@ -560,7 +515,6 @@ let init = (app) => {
     };
 
     app.methods = {
-        filter_by_vaccine_types_general: app.filter_by_vaccine_types_general,
         vaccine_types_to_layer: app.vaccine_types_to_layer,
         clear_search: app.clear_search,
         search: app.search,
