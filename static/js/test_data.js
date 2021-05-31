@@ -3,7 +3,6 @@
 let app = {};
 
 
-
 // Given an empty app object, initializes it filling its attributes,
 // creates a Vue instance, and then initializes the Vue instance.
 let init = (app) => {
@@ -27,10 +26,6 @@ let init = (app) => {
         app.vue.show_histogram = status;
     };
 
-    app.set_histogram_status = function (status) {
-        app.vue.show_histogram = status;
-    };
-
     app.set_data_url = function (new_url) {
         app.vue.data_url = new_url;
     };
@@ -38,11 +33,16 @@ let init = (app) => {
     app.get_data_url = function () {
         return app.vue.data_url;
     };
+    app.set_show_stats = function (status) {
+        app.vue.show_stats = status;
+    };
+
     // This contains all the methods.
     app.methods = {
         set_data_url: app.set_data_url,
         get_data_url: app.get_data_url,
         set_histogram_status: app.set_histogram_status,
+        set_show_stats: app.set_show_stats,
         
     };
 
@@ -51,7 +51,7 @@ let init = (app) => {
     app.vue = new Vue({
         el: "#vue-target",
         data: app.data,
-        methods: app.methods
+        methods: app.methods,
     });
 
     // And this initializes it.

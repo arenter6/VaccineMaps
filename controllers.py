@@ -250,29 +250,67 @@ def load_reviews():
 @action('test_data')
 @action.uses(db, session, auth, 'test_data.html')
 def test_data():
-    # get data
-    
-    pRows = db(db.review.vaccine_type == 'Pfizer-BioNTech').select()
-    # print(type(pRows))
-    newList = []
-    # fields = ["vaccine_type", "rating"]
+    # # get data
+    # pRows = db(db.review.vaccine_type == 'Pfizer-BioNTech').select()
+    # jRows = db(db.review.vaccine_type == 'Johnson & Johnson').select()
+    # mRows = db(db.review.vaccine_type == 'Moderna').select()
+    # pList = []
+    # jList = []
+    # jList = []
+    # fields = ["rating"]
+
+    # for row in pRows:
+    #     pList.append(row["rating"])
+    # for row in jRows:
+    #     jList.append(row["rating"])
+    # for row in mRows:
+    #     mList.append(row["rating"])
+    # # dataPath = os.path.join(sys.path[0], "test_data.csv")
+    # pList.sort()
+    # jList.sort()
+    # mList.sort()
+    # pdataPath = "apps/room12/static/p_data.csv"
+    # jdataPath = "apps/room12/static/j_data.csv"
+    # mdataPath = "apps/room12/static/m_data.csv"
+
+    # with open(pdataPath, 'w') as csvfile:
+    #     csvwriter = csv.writer(csvfile)
+    #     csvwriter.writerow(fields)
+    #     csvwriter.writerow(pList)
+    # with open(jdataPath, 'w') as csvfile:
+    #     csvwriter = csv.writer(csvfile)
+    #     csvwriter.writerow(fields)
+    #     csvwriter.writerow(jList)
+    # with open(mdataPath, 'w') as csvfile:
+    #     csvwriter = csv.writer(csvfile)
+    #     csvwriter.writerow(fields)
+    #     csvwriter.writerow(mList)
+    vaccines = ['Pfizer-BioNTech', 'Johnson & Johnson', 'Moderna']
+    for i in range (0, 3):
+        print(i)
+        writeCsvFile(vaccines[i])
+    return dict(USER_ID=USER_ID, get_data_url = URL('get_data'), vaccines = vaccines)
+
+def writeCsvFile(vaccine_type):
+    rows = db(db.review.vaccine_type == vaccine_type).select()
+    pList = []
+
     fields = ["rating"]
 
-    for row in pRows:
-        # print(row)
-        # newList.append(row["vaccine_type"])
-        newList.append(row["rating"])
-        # print(newList)
-    # dataPath = os.path.join(sys.path[0], "test_data.csv")
-    dataPath = "apps/room12/static/p_test_data.csv"
-    # F = ["vaccine_type", "rating"]
-    # with open(dataPath, 'w') as dumpfile:
-    #     pRows.export_to_csv_file(dumpfile, colnames = F)
+    for row in rows:
+        pList.append(row["rating"])
+  
+    pList.sort()
+    print(pList)
+    dataPath = "apps/room12/static/" + vaccine_type + "_data.csv"
+    print(dataPath)
     with open(dataPath, 'w') as csvfile:
-        csvwriter = csv.writer(csvfile)
+        csvwriter = csv.writer(csvfile, lineterminator='\n', delimiter = '\n')
         csvwriter.writerow(fields)
-        csvwriter.writerow(newList)
-    return dict(data = pRows, USER_ID=USER_ID, get_data_url = URL('get_data'), dataPath = dataPath)
+        # for row in pList:
+        csvwriter.writerow(pList)
+
+    return ()
 
 @action('get_data')
 @action.uses(db, session, auth)
