@@ -3,14 +3,17 @@
 let app = {};
 
 
+
 // Given an empty app object, initializes it filling its attributes,
 // creates a Vue instance, and then initializes the Vue instance.
 let init = (app) => {
-
+    
     // This is the Vue data.
     app.data = {
         data_url: "",
         fileName: "",
+        show_histogram: false,
+        show_stats: false,
     };
 
     app.enumerate = (a) => {
@@ -18,6 +21,14 @@ let init = (app) => {
         let k = 0;
         a.map((e) => { e._idx = k++; });
         return a;
+    };
+
+    app.set_histogram_status = function (status) {
+        app.vue.show_histogram = status;
+    };
+
+    app.set_histogram_status = function (status) {
+        app.vue.show_histogram = status;
     };
 
     app.set_data_url = function (new_url) {
@@ -31,6 +42,8 @@ let init = (app) => {
     app.methods = {
         set_data_url: app.set_data_url,
         get_data_url: app.get_data_url,
+        set_histogram_status: app.set_histogram_status,
+        
     };
 
     
@@ -48,7 +61,7 @@ let init = (app) => {
         axios.get(get_data_url)
         .then(function (response) 
         {
-          console.log(response.data.data);
+        //   console.log(response.data.data);
           data_url = response.data.data_url;
         });
     };

@@ -253,16 +253,16 @@ def test_data():
     # get data
     
     pRows = db(db.review.vaccine_type == 'Pfizer-BioNTech').select()
-    print(type(pRows))
+    # print(type(pRows))
     newList = []
     # fields = ["vaccine_type", "rating"]
     fields = ["rating"]
 
     for row in pRows:
-        print(row)
+        # print(row)
         # newList.append(row["vaccine_type"])
         newList.append(row["rating"])
-        print(newList)
+        # print(newList)
     # dataPath = os.path.join(sys.path[0], "test_data.csv")
     dataPath = "apps/room12/static/p_test_data.csv"
     # F = ["vaccine_type", "rating"]
