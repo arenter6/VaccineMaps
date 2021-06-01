@@ -45,7 +45,7 @@
          <div class="field">
             <label class="label" for="none_site_address">Site Address</label>
             <div class="control">
-               <input autocomplete="on" class="type-string input" id="none_site_address" v-model="site_address" type="text">
+               <input autocomplete="on" class="type-string input" id="none_site_address" v-model="site_address" type="text" maxlength = "50">
             </div>
             <div v-if="site_address_error">
                <p style="color:red">Please enter a valid address.</p>
@@ -54,7 +54,7 @@
          <div class="field">
             <label class="label" for="none_city">City</label>
             <div class="control">
-               <input autocomplete="on" class="type-string input" id="none_city" v-model="city" type="text">
+               <input autocomplete="on" class="type-string input" id="none_city" v-model="city" type="text" maxlength = "22">
             </div>
             <div v-if="city_error">
                <p style="color:red">Please enter a valid city.</p>
@@ -86,7 +86,7 @@
          <div class="field">
             <label class="label" for="none_feedback">Feedback (Optional)</label>
             <div class="control">
-               <textarea class="textarea" placeholder="Enter your review here" id="none_feedback" v-model="feedback"></textarea>
+               <textarea class="textarea" placeholder="Enter your review here" id="none_feedback" v-model="feedback" maxlength = "500"></textarea>
             </div>
          </div>
          <div class="field">

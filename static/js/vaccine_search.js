@@ -97,7 +97,7 @@ let init = (app) => {
     };
 
     app.search = function () {
-        if (app.vue.zipcode != "" && app.numberOnly(app.vue.zipcode)) {
+        if (app.vue.zipcode != "" && numberOnly(app.vue.zipcode)) {
             app.vue.invalid_zipcode_error = false;
             app.checkGeoJSON();
 
@@ -464,8 +464,6 @@ let init = (app) => {
                 for (var i in app.vue.rows){ //Searches for site and sets maps view to that location
                     if (app.vue.rows[i].id == id){
                         site = app.vue.rows[i].id;
-                        //map._layers[site].fire('click');
-                        //var coords = map._layers[site]._latlng;
                         map.flyTo([app.vue.rows[i].lat, app.vue.rows[i].lng], 15);
                         break;
                     }
@@ -528,17 +526,6 @@ let init = (app) => {
         }
     };
 
-    app.numberOnly = function(zipcode) { //Validates zipcode to only numerical inputs
-        var code, i, len;
-        for (i = 0, len = zipcode.length; i < len; i++) {
-            code = zipcode.charCodeAt(i);
-            if (!(code > 47 && code < 58)) { //Number in ascii
-                return false;
-            }
-        }
-        return true;
-    };
-
     app.methods = {
         vaccine_types_to_layer: app.vaccine_types_to_layer,
         clear_search: app.clear_search,
@@ -547,7 +534,6 @@ let init = (app) => {
         enumerate: app.enumerate,
         highlight: app.highlight,
         checkGeoJSON: app.checkGeoJSON,
-        numberOnly: app.numberOnly,
     };
 
     app.vue = new Vue({
@@ -651,4 +637,15 @@ function toTitleCase(str) { //Changes a string to capitalize every word's first 
     return str.replace(/\w\S*/g, function(txt){
         return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
     });
+};
+
+function numberOnly(zipcode) { //Validates zipcode to only numerical inputs
+    var code, i, len;
+    for (i = 0, len = zipcode.length; i < len; i++) {
+        code = zipcode.charCodeAt(i);
+        if (!(code > 47 && code < 58)) { //Number in ascii
+            return false;
+        }
+    }
+    return true;
 };

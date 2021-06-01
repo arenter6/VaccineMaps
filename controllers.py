@@ -65,6 +65,7 @@ def experience():
     if user.get('email') is not None:
         print("User:" + user.get('email') + " logged in on Experience")
         review_info = db(db.review.users_id == user.get('id')).select().as_list()
+        review_info.sort(key=lambda x: x["vaccinated_date"]) #Returns current users vaccinations by increasing date
         can_review = True if len(review_info) < 2 else False
         return dict(logged_in=1, user=user, review_info=review_info, url_signer=url_signer, can_review=can_review)
     else:
@@ -173,9 +174,9 @@ def edit_review_submit():
     if site is not None: #if site is already in db
         if (r.site_address != request.json.get('site_address')) or (r.city != request.json.get('city')) or (r.state != request.json.get('state')): #if location is changed
             db((db.site.address == request.json.get('site_address')) & (db.site.city == request.json.get('city'))).update(
-                total_rating=int(site.total_rating) - int(r.rating) + int(request.json.get('rating')),
+                total_rating=int(site.total_rating) + int(request.json.get('rating')),
                 num_raters=int(site.num_raters) + 1,
-                average_rating=float(int(site.total_rating) - int(r.rating) + int(request.json.get('rating')))/float(int(site.num_raters) + 1)
+                average_rating=float(int(site.total_rating) + int(request.json.get('rating')))/float(int(site.num_raters) + 1)
             )
             #decrement old rating and raters
             old_site = db((db.site.address == r.site_address) & (db.site.city == r.city)).select().first()
@@ -255,7 +256,9 @@ def delete_review(review_id=None):
 @action('view_reviews')
 @action.uses(db, session, auth, 'view_reviews.html')
 def view_reviews():
+    #Returns reviews sorted by descending vaccination date
     review_info = db(db.review.id).select().as_list()
+    review_info.sort(key=lambda x: x["vaccinated_date"], reverse=True)
     return dict(review_info=review_info)
 
 #######Experience ends
