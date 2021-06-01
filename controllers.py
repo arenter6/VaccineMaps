@@ -142,61 +142,6 @@ def submit_form():
 def edit_review(review_id=None):
     assert review_id is not None
     user = auth.get_user()
-    r = db.review[review_id]
-    if r is None:
-        print("Review does not exist")
-        redirect(URL('experience'))
-    form = Form(experience_fields, record=r, deletable=False, csrf_session=session, formstyle=FormStyleBulma)
-    if form.accepted:
-        print(get_user_email() + "'s review was successfully updated.")
-        site = db((db.site.address == form.vars['site_address']) & (db.site.city == form.vars['city'])).select().first()
-        if site is not None: #if site is already in db
-            if (r.site_address != form.vars['site_address']) or (r.city != form.vars['city']) or (r.state != form.vars['state']): #if location is changed
-                db((db.site.address == form.vars['site_address']) & (db.site.city == form.vars['city'])).update(
-                    total_rating=int(site.total_rating) - int(r.rating) + form.vars['rating'],
-                    num_raters=int(site.num_raters) + 1,
-                    average_rating=float(int(site.total_rating) - int(r.rating) + form.vars['rating'])/float(int(site.num_raters) + 1)
-                )
-                #decrement old rating and raters
-                old_site = db((db.site.address == r.site_address) & (db.site.city == r.city)).select().first()
-                if int(old_site.num_raters) <= 1: #avoid division by 0
-                    db((db.site.address == r.site_address) & (db.site.city == r.city)).delete()
-                else:
-                    db((db.site.address == r.site_address) & (db.site.city == r.city)).update(
-                        total_rating=int(old_site.total_rating) - int(r.rating),
-                        num_raters=int(old_site.num_raters) - 1,
-                        average_rating=float(int(old_site.total_rating) - int(r.rating))/float(int(old_site.num_raters) - 1)
-                    )
-            else: #user did not change site address, city or state so just update the total ratings and average
-                db((db.site.address == form.vars['site_address']) & (db.site.city == form.vars['city'])).update(
-                    total_rating=int(site.total_rating) - int(r.rating) + form.vars['rating'],
-                    average_rating=float(int(site.total_rating) - int(r.rating) + form.vars['rating'])/float(site.num_raters)
-                )
-        else: #If the new site has not been reviewed, add one to db
-            print("Inserted a location from edit")
-            db.site.insert( #Insert new site rating
-                address=form.vars['site_address'],
-                city=form.vars['city'],
-                state=form.vars['state'],
-                total_rating=form.vars['rating'],
-                num_raters=1,
-                average_rating=float(form.vars['rating'])
-            )
-            #Remove old site rating and num raters and delete if 0 raters
-            old_site = db((db.site.address == r.site_address) & (db.site.city == r.city)).select().first()
-            if int(old_site.num_raters) <= 1: #avoid division by 0
-                db((db.site.address == r.site_address) & (db.site.city == r.city)).delete()
-            else:
-                db((db.site.address == r.site_address) & (db.site.city == r.city)).update(
-                    total_rating=int(old_site.total_rating) - int(r.rating),
-                    num_raters=int(old_site.num_raters) - 1,
-                    average_rating=float(int(old_site.total_rating) - int(r.rating))/float(int(old_site.num_raters) - 1)
-                )
-        db(db.review.id == r.id).update(vaccine_type=form.vars['vaccine_type'], rating=form.vars['rating'],
-                                        site_address=form.vars['site_address'], city=form.vars['city'],
-                                        state=form.vars['state'], feedback=form.vars['feedback'])
-        redirect(URL('experience'))
-        print(review_id)
     return dict(review_id=review_id, user=user, signer=url_signer, edit_review_load_url=URL('edit_review_load', signer=url_signer), edit_review_submit_url=URL('edit_review_submit', signer=url_signer))
 
 #Gets the review record and sends edit review

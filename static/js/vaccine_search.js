@@ -32,9 +32,8 @@ let init = (app) => {
     app.distance = 0;
 
     app.data = { //This is Vue data
-        zipcode: null,
+        zipcode: "",
         geoJson: null,
-        //range: 10,
         range: { //Default search radius is 10 miles
             number: 10,
         },
@@ -98,10 +97,10 @@ let init = (app) => {
     };
 
     app.search = function () {
-        if (app.vue.zipcode !== "") {
-            checkGeoJSON();
-            //TODO form validation for empty string
-            //Packaging Mapbox Geocoding API request using user zipcode
+        if (app.vue.zipcode != "" && app.numberOnly(app.vue.zipcode)) {
+            app.vue.invalid_zipcode_error = false;
+            app.checkGeoJSON();
+
             let gc_start = "https://api.mapbox.com/geocoding/v5/mapbox.places/";
             let gc_end = ".json?country=US&access_token=";
             let geocoding_request = gc_start.concat(app.vue.zipcode, gc_end, api_key);
@@ -119,24 +118,24 @@ let init = (app) => {
                 app.long = result.features[0].geometry.coordinates[0];
                 //Store features that hold city and state
                 let cityState = result.features[0].context;
-                console.log('CITY STATE ELEMENTS');
+
                 //For each element id, if it matches 'place' and 'region' grab city and state
                 cityState.forEach(function (elem) {
                     //Split the id string at .(Dot); i.e. place. and region.
                     let str = elem.id.split('.')[0];
                     if (str === 'place') {
                         app.city = elem.text;
-                        console.log('Found City:', app.city);
+                        //console.log('Found City:', app.city);
                     } else if (str === 'region') { //And region holds state
                         app.state = elem.short_code.split('-')[1];
-                        console.log('Found State:', app.state);
+                        //console.log('Found State:', app.state);
                     };
                 });
                 //Packaging VaccineSpotter API request using user U.S.-state 
                 let vacc_sites_by_state = "https://www.vaccinespotter.org/api/v0/states/";
                 let resp_type = ".json";
                 let vaccination_sites_request = vacc_sites_by_state.concat(app.state, resp_type);
-                console.log("VACCINESPOTTER API REQ:", vaccination_sites_request);
+                //console.log("VACCINESPOTTER API REQ:", vaccination_sites_request);
                 //Fetch second API -- Vaccination Sites by State
                 return fetch(vaccination_sites_request);
             }).then(function (response) {
@@ -147,21 +146,21 @@ let init = (app) => {
                 }
             }).then(function (userData) {
                 console.log("USERDATA", userData);
-                console.log("USERDATA TYPE", typeof userData);
+                //console.log("USERDATA TYPE", typeof userData);
                 app.user_data = userData;
 
                 //Here we adjust zoom levels based on the mile radius selected for search
                 if (app.vue.range.number === 1) {
-                    console.log('range:', app.vue.range.number);
+                    //console.log('range:', app.vue.range.number);
                     app.zoomLevel = 15;
                 } else if (app.vue.range.number === 5 || app.vue.range.number === 10) {
-                    console.log('range:', app.vue.range.number);
+                    //console.log('range:', app.vue.range.number);
                     app.zoomLevel = 12;
                 } else if (app.vue.range.number === 25) {
-                    console.log('range:', app.vue.range.number);
+                    //console.log('range:', app.vue.range.number);
                     app.zoomLevel = 10;
                 } else if (app.vue.range.number === 50) {
-                    console.log('range:', app.vue.range.number);
+                    //console.log('range:', app.vue.range.number);
                     app.zoomLevel = 9;
                 }
                 app.vue.center = [app.lati, app.long]; //Sets searched center and zoom for later reference with table
@@ -170,16 +169,14 @@ let init = (app) => {
 
                 var distance = app.vue.range.number * 1600; //Converts miles from range input to meters
                 app.distance = distance;
-                console.log("The radius is " + distance + " meters");
 
-
-                console.log('LOAD_RATINGS:', load_ratings_url);
+                //console.log('LOAD_RATINGS:', load_ratings_url);
 
                 return axios.get(load_ratings_url, { params: { "state": app.state } });
 
             }).then(function (ratingsRequest) {
                 let ratingsData = ratingsRequest.data;
-                console.log('ratingsData:', ratingsData);
+                //console.log('ratingsData:', ratingsData);
                 app.vue.geoJson = L.geoJson(app.user_data, //From the json request, we parse information according to our needs and display onto the map
                     {
                         onEachFeature: function (feature, layer) { //For every location, we set the appropriate information to rows so html can iterate nicely
@@ -198,8 +195,6 @@ let init = (app) => {
                             if (addressRemovedAbbreviation in ratingsData.ratings) {
                                 rating = ratingsData.ratings[addressRemovedAbbreviation].average_rating;
                             }
-
-                            layer._leaflet_id = feature.properties.id;
                             app.vue.rows.push({ //Adds location to array with information
                                 id: feature.properties.id,
                                 provider: feature.properties.provider_brand_name,
@@ -269,7 +264,7 @@ let init = (app) => {
                                 feature.properties.appointments_available = true;
                                 if (feature.properties.appointment_vaccine_types === null) {
                                     console.log('Provider', feature.properties.provider_brand_name);
-                                    console.log('@', feature.properties.adddress);
+                                    console.log('@', feature.properties.address);
                                     console.log('REPORTED NULL');
                                     const source = { 'unknown': true };
                                     feature.properties.appointment_vaccine_types = Object.assign(feature.properties.appointment_vaccine_types, source);
@@ -287,14 +282,14 @@ let init = (app) => {
                                 //Link for booking appointment at specified location
                                 popup += "<a target='_blank' href='" + feature.properties.url + "'>" + "Book an Appointment" + "</a>";
 
-                                app.vue.sites[feature.properties.id] = L.marker(latlng, { icon: green }).addTo(map).bindPopup(popup).addTo(layerGroup).addTo(layerGroup);
-                                return L.marker(latlng, { icon: green }).addTo(map).bindPopup(popup).addTo(layerGroup).addTo(layerGroup);
+                                app.vue.sites[feature.properties.id] = L.marker(latlng, { icon: green }).addTo(map).bindPopup(popup).addTo(layerGroup);
+                                return L.marker(latlng, { icon: green }).addTo(map).bindPopup(popup).addTo(layerGroup);
 
                             } else { //No appointments available
                                 popup += "<h2 class='has-text-danger'>Not Available</h2>";
 
                                 app.vue.sites[feature.properties.id] = L.marker(latlng, { icon: red }).addTo(map).bindPopup(popup).addTo(layerGroup);
-                                return L.marker(latlng, { icon: red }).addTo(map).bindPopup(popup).addTo(layerGroup).addTo(layerGroup);
+                                return L.marker(latlng, { icon: red }).addTo(map).bindPopup(popup).addTo(layerGroup);
                             }
                         }, // Sets icon for every location
                         filter: function (feature) { // Filters out locations that are not within distance
@@ -394,7 +389,7 @@ let init = (app) => {
                                 }
                             }
                         }
-                    }).addTo(map);
+                    }).addTo(layerGroup).addTo(map);
 
                 //app.vue.invalid_vacc_search ? (app.vue.available_sites == 0) : (app.vue.available_sites > 0);
                 if (app.vue.available_sites == 0) {
@@ -407,6 +402,9 @@ let init = (app) => {
                 console.warn(error);
                 app.vue.invalid_zipcode_error = true;
             });
+        } else {
+            app.vue.invalid_zipcode_error = true;
+            app.checkGeoJSON();
         }
 
     };
@@ -507,6 +505,30 @@ let init = (app) => {
         }
     };
 
+    app.checkGeoJSON = function() {
+        if (app.vue.geoJson) {
+            console.log("Removed the map layer and table");
+            app.vue.rows = [];
+            app.vue.available_sites = 0;
+            app.vue.current_toggle = -1;
+            app.vue.geoJson.clearLayers();
+            layerGroup.clearLayers();
+        } else {
+            console.log("GeoJson is not yet defined");
+        }
+    };
+
+    app.numberOnly = function(zipcode) { //Validates zipcode to only numerical inputs
+        var code, i, len;
+        for (i = 0, len = zipcode.length; i < len; i++) {
+            code = zipcode.charCodeAt(i);
+            if (!(code > 47 && code < 58)) { //Number in ascii
+                return false;
+            }
+        }
+        return true;
+    };
+
     app.methods = {
         vaccine_types_to_layer: app.vaccine_types_to_layer,
         clear_search: app.clear_search,
@@ -514,6 +536,8 @@ let init = (app) => {
         openMarkerPopup: app.openMarkerPopup,
         enumerate: app.enumerate,
         highlight: app.highlight,
+        checkGeoJSON: app.checkGeoJSON,
+        numberOnly: app.numberOnly,
     };
 
     app.vue = new Vue({
@@ -601,24 +625,13 @@ map.on('click', function(e) {
     }).then(function (result) {
         //Get zipcode from features
         app.vue.zipcode = result.features[0].text;
+        //app.checkGeoJSON();
+        //Call search()
+        app.search();
         //console.log('ZIPCODE RETRIEVED:', app.vue.zipcode);
     })
-    //If geoJSON layer is active -- reset; to prevent points from building up
-    checkGeoJSON();
-    //Call search()
-    app.search();
-});
 
-checkGeoJSON = function() {
-    if (app.vue.geoJson) {
-        console.log("Removed the map layer and table");
-        app.vue.rows = [];
-        app.vue.available_sites = 0;
-        app.vue.current_toggle = -1;
-        app.vue.geoJson.clearLayers();
-        layerGroup.clearLayers();
-    }
-};
+});
 
 function roundToTwo(num) { //returns a float rounded to the hundredths place
     return +(Math.round(num + "e+2")  + "e-2");

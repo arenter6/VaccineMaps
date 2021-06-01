@@ -36,12 +36,12 @@ let init = (app) => {
         } else{
             app.vue.date_error = false;
         }
-        if(app.vue.site_address == "") {
+        if(app.vue.site_address == "" || !app.isAlphaNumeric(app.vue.site_address)) {
             app.vue.site_address_error = true;
         } else{
             app.vue.site_address_error = false;
         }
-        if(app.vue.city == "") {
+        if(app.vue.city == "" || !app.alphaOnly(app.vue.city)) {
             app.vue.city_error = true;
         } else{
             app.vue.city_error = false;
@@ -71,11 +71,11 @@ let init = (app) => {
                     old_id: parseInt(review_id),
                     vaccine_type: app.vue.vaccine_type,
                     rating: app.vue.rating,
-                    site_address: app.vue.site_address,
+                    site_address: app.vue.site_address.trim(),
                     date: date,
-                    city: app.vue.city,
+                    city: app.vue.city.trim(),
                     state: app.vue.state,
-                    feedback: app.vue.feedback,
+                    feedback: app.vue.feedback.trim(),
                 }).then((response) => {
                     if(response.status == 200) {
                         window.location = response.data.redirect;
@@ -91,30 +91,51 @@ let init = (app) => {
 
     };
 
+    app.isAlphaNumeric = function(str) {
+        var code, i, len;
+        for (i = 0, len = str.length; i < len; i++) {
+            code = str.charCodeAt(i);
+            if (!(code > 47 && code < 58) && // numeric (0-9)
+                !(code > 64 && code < 91) && // upper alpha (A-Z)
+                !(code > 96 && code < 123) && !(code == 32)) { // lower alpha (a-z)
+                return false;
+            }
+        }
+        return true;
+    };
+
+    app.alphaOnly = function(str) {
+        var code, i, len;
+        for (i = 0, len = str.length; i < len; i++) {
+            code = str.charCodeAt(i);
+            if (!(code > 64 && code < 91) && // upper alpha (A-Z)
+                !(code > 96 && code < 123) && !(code == 32)) { // lower alpha (a-z)
+                return false;
+            }
+        }
+        return true;
+    };
+
     app.getToday =  function() {
-      var today = new Date();
-      var dd = today.getDate();
-      var mm = today.getMonth()+1; //January is 0!
-      var yyyy = today.getFullYear();
+        var today = new Date();
+        var dd = today.getDate();
+        var mm = today.getMonth()+1; //January is 0!
+        var yyyy = today.getFullYear();
 
-      if(dd<10) {
-          dd = '0'+dd
-      }
+        if(dd<10) dd = '0'+dd;
 
-      if(mm<10) {
-          mm = '0'+mm
-      }
+        if(mm<10) mm = '0'+mm;
 
-      today = yyyy + '-' + mm + '-' + dd;
-      console.log(today);
-      app.vue.date = today;
-      document.getElementById("none_date").setAttribute("max", today);
-    }
+        today = yyyy + '-' + mm + '-' + dd;
+        document.getElementById("none_date").setAttribute("max", today);
+    };
 
     app.methods = {
         submit_form: app.submit_form,
         validate_form: app.validate_form,
         getToday: app.getToday,
+        isAlphaNumeric: app.isAlphaNumeric,
+        alphaOnly: app.alphaOnly,
     };
 
     app.vue = new Vue({

@@ -41,15 +41,15 @@
         [[else:]]
         <h2 class="subtitle">Please login to leave a review!</h2>
         [[pass]]
-        <a class="button is-primary" href="[[=URL('index')]]">
+        <a class="button is-info" href="[[=URL('index')]]">
           <span>Back</span>
         </a>
         [[if can_review == True:]]
-        <a class="button is-primary" href="[[=URL('submit_review', signer=url_signer)]]">
+        <a class="button is-info" href="[[=URL('submit_review', signer=url_signer)]]">
           <span>Submit Review</span>
         </a>
         [[pass]]
-        <a class="button is-primary" href="[[=URL('view_reviews')]]">
+        <a class="button is-info" href="[[=URL('view_reviews')]]">
           <span>View Reviews</span>
         </a>
     </div>
