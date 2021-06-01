@@ -32,7 +32,7 @@ from py4web.utils.url_signer import URLSigner
 from .models import get_user_email, us_states, get_time
 from py4web.utils.form import Form, FormStyleBulma
 from pydal.validators import *
-from .settings_private import *
+from .private.settings_private import *
 
 url_signer = URLSigner(session)
 vaccines = {
@@ -40,8 +40,6 @@ vaccines = {
         'Moderna': 'Moderna',
         'Johnson & Johnson': 'Johnson & Johnson'
 }
-
-
 
 experience_fields = [Field('vaccine_type', requires=IS_IN_SET(vaccines), error_message=T("Please choose from the list above.")),
                      Field('rating', requires=IS_INT_IN_RANGE(0, 6), error_message=T("Please enter a rating between 0 and 5.")),

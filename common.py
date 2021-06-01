@@ -36,13 +36,20 @@ for item in settings.LOGGERS:
 # #######################################################
 # connect to db
 # #######################################################
-db = DAL(
-    settings.DB_URI,
-    folder=settings.DB_FOLDER,
-    pool_size=settings.DB_POOL_SIZE,
-    migrate=settings.DB_MIGRATE,
-    fake_migrate=settings.DB_FAKE_MIGRATE,
-)
+if os.environ.get("GAE_ENV"):
+    db = DAL(
+        settings.CLOUD_DB_URI,
+        migrate=settings.CLOUD_DB_MIGRATE,
+        fake_migrate=settings.CLOUD_DB_FAKE_MIGRATE,
+    )
+else:
+    db = DAL(
+        settings.DB_URI,
+        folder=settings.DB_FOLDER,
+        pool_size=settings.DB_POOL_SIZE,
+        migrate=settings.DB_MIGRATE,
+        fake_migrate=settings.DB_FAKE_MIGRATE,
+    )
 
 # #######################################################
 # define global objects that may or may not be used by the actions
@@ -176,7 +183,7 @@ if settings.OAUTH2OKTA_CLIENT_ID:
         )
     )
 
-# #######################################################
+""" # #######################################################
 # Define a convenience action to allow users to download
 # files uploaded and reference by Field(type='upload')
 # #######################################################
@@ -189,7 +196,7 @@ if settings.UPLOAD_FOLDER:
     # for every field of type upload you MUST specify:
     #
     # field.upload_path = settings.UPLOAD_FOLDER
-    # field.download_url = lambda filename: URL('download/%s' % filename)
+    # field.download_url = lambda filename: URL('download/%s' % filename) """
 
 # #######################################################
 # Optionally configure celery
