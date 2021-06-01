@@ -284,7 +284,7 @@ def load_ratings():
     ratings_json = {}
     for row in ratings: #Everytime we load ratings, calculate new average and set addresses to lower case
         rating_dict = {
-            'average_rating': row["average_rating"],
+            'average_rating': round(float(row["average_rating"]), 2),
             'city': row["city"].lower(),
         }
         ratings_json[row["address"].lower().rsplit(' ', 1)[0]] = rating_dict
