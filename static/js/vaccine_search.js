@@ -207,6 +207,8 @@ let init = (app) => {
                                 rating: rating,
                                 availability: available,
                                 marker: L.marker([feature.geometry.coordinates[1], feature.geometry.coordinates[0]]), //Used to open popup
+                                lat: feature.geometry.coordinates[1],
+                                lng: feature.geometry.coordinates[0],
                                 highlight: false, //For displaying table use
                                 toggle: false, //For displaying popup usage and restoring map view
                             });
@@ -426,6 +428,8 @@ let init = (app) => {
             marker: post.marker,
             highlight: hovering,
             toggle: post.toggle,
+            lat: post.lat,
+            lng: post.lng,
         });
     };
 
@@ -448,6 +452,8 @@ let init = (app) => {
                     marker: post.marker,
                     highlight: post.highlight,
                     toggle: false,
+                    lat: post.lat,
+                    lng: post.lng,
                 });
             }
             app.vue.current_toggle = idx; //sets the current popup
@@ -458,9 +464,9 @@ let init = (app) => {
                 for (var i in app.vue.rows){ //Searches for site and sets maps view to that location
                     if (app.vue.rows[i].id == id){
                         site = app.vue.rows[i].id;
-                        map._layers[site].fire('click');
-                        var coords = map._layers[site]._latlng;
-                        map.flyTo(coords, 15);
+                        //map._layers[site].fire('click');
+                        //var coords = map._layers[site]._latlng;
+                        map.flyTo([app.vue.rows[i].lat, app.vue.rows[i].lng], 15);
                         break;
                     }
                 }
@@ -479,6 +485,8 @@ let init = (app) => {
                     marker: post.marker,
                     highlight: post.highlight,
                     toggle: !toggle,
+                    lat: post.lat,
+                    lng: post.lng,
                 });
             } else { //Closes the popup and restores back to original state and zoom
                 map.closePopup();
@@ -498,6 +506,8 @@ let init = (app) => {
                     marker: post.marker,
                     highlight: post.highlight,
                     toggle: !toggle,
+                    lat: post.lat,
+                    lng: post.lng,
                 });
             }
         } else {
@@ -604,7 +614,7 @@ marker.bindPopup("<b>University of California Santa Cruz</b><br>Home Sweet Home"
 
 //For Dynamic searching; When the user double-clicks on any area of the map, 
 //A reverse geocoding request is done to retrieve zipcode from coordinates obtained from click
-map.on('click', function(e) {
+map.on('dblclick', function(e) {
     var coord = e.latlng;    
     let lati_str = coord.lat.toString(); //Make coordinates into string for request
     let long_str = coord.lng.toString();
