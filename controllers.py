@@ -250,67 +250,63 @@ def load_reviews():
 @action('test_data')
 @action.uses(db, session, auth, 'test_data.html')
 def test_data():
-    # # get data
-    # pRows = db(db.review.vaccine_type == 'Pfizer-BioNTech').select()
-    # jRows = db(db.review.vaccine_type == 'Johnson & Johnson').select()
-    # mRows = db(db.review.vaccine_type == 'Moderna').select()
-    # pList = []
-    # jList = []
-    # jList = []
-    # fields = ["rating"]
-
-    # for row in pRows:
-    #     pList.append(row["rating"])
-    # for row in jRows:
-    #     jList.append(row["rating"])
-    # for row in mRows:
-    #     mList.append(row["rating"])
-    # # dataPath = os.path.join(sys.path[0], "test_data.csv")
-    # pList.sort()
-    # jList.sort()
-    # mList.sort()
-    # pdataPath = "apps/room12/static/p_data.csv"
-    # jdataPath = "apps/room12/static/j_data.csv"
-    # mdataPath = "apps/room12/static/m_data.csv"
-
-    # with open(pdataPath, 'w') as csvfile:
-    #     csvwriter = csv.writer(csvfile)
-    #     csvwriter.writerow(fields)
-    #     csvwriter.writerow(pList)
-    # with open(jdataPath, 'w') as csvfile:
-    #     csvwriter = csv.writer(csvfile)
-    #     csvwriter.writerow(fields)
-    #     csvwriter.writerow(jList)
-    # with open(mdataPath, 'w') as csvfile:
-    #     csvwriter = csv.writer(csvfile)
-    #     csvwriter.writerow(fields)
-    #     csvwriter.writerow(mList)
     vaccines = ['Pfizer-BioNTech', 'Johnson & Johnson', 'Moderna']
     for i in range (0, 3):
-        print(i)
+        # print(i)
         writeCsvFile(vaccines[i])
-    return dict(USER_ID=USER_ID, get_data_url = URL('get_data'), vaccines = vaccines)
+    reviewAvgs = getAvgs(vaccines)
+    totalReviews = db(db.review).count()
+    return dict(USER_ID=USER_ID, get_data_url = URL('get_data'), vaccines = vaccines, 
+    reviewAvgs = reviewAvgs, totalReviews = totalReviews)
 
 def writeCsvFile(vaccine_type):
-    rows = db(db.review.vaccine_type == vaccine_type).select()
-    pList = []
-
-    fields = ["rating"]
-
-    for row in rows:
-        pList.append(row["rating"])
-  
-    pList.sort()
-    print(pList)
-    dataPath = "apps/room12/static/" + vaccine_type + "_data.csv"
-    print(dataPath)
-    with open(dataPath, 'w') as csvfile:
+    hRows = db(db.review.vaccine_type == vaccine_type).select()
+    bRows = db(db.review).select()
+    hList = []
+    bList = []
+    hFields = ["rating"]
+    bFields = ["vaccine_type,rating"]
+    for row in hRows:
+        hList.append(row["rating"])
+    for row in bRows:
+        print(row)
+        bList.append(row["vaccine_type"] + "," + row["rating"])
+    print(bList)
+    hList.sort()
+    # print(pList)
+    dataUrl = "apps/room12/static/"
+    histogramPath = dataUrl + vaccine_type + "_data.csv"
+    boxplotPath = dataUrl + "boxplot_data.csv"
+    # print(dataPath)
+    with open(histogramPath, 'w') as csvfile:
         csvwriter = csv.writer(csvfile, lineterminator='\n', delimiter = '\n')
-        csvwriter.writerow(fields)
-        # for row in pList:
-        csvwriter.writerow(pList)
-
+        csvwriter.writerow(hFields)
+        csvwriter.writerow(hList)
+    with open(boxplotPath, 'w') as csvfile:
+        csvwriter = csv.writer(csvfile, lineterminator='\n', delimiter = '\n')
+        csvwriter.writerow(bFields)
+        csvwriter.writerow(bList)
     return ()
+
+def getAvgs(vaccines):
+    reviewAvgs = []
+    tempAvg = 0
+    for i in range(len(vaccines)):
+        # print(i)
+        newList = []
+        rows = db(db.review.vaccine_type == vaccines[i]).select().as_list()
+        for row in rows:
+            # tempList = []
+            # tempList.append(int(row["rating"]), )
+            newList.append(int(row["rating"]))
+        # print("newList", newList)
+        if (len(newList) == 0):
+            tempAvg = 0
+        else:
+            tempAvg = sum(newList) / len(newList)
+        reviewAvgs.append(tempAvg)
+        # print(vaccines[i], tempAvg)
+    return(reviewAvgs)
 
 @action('get_data')
 @action.uses(db, session, auth)
