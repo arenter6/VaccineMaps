@@ -323,3 +323,9 @@ def test_data():
 def get_data():
     data_url = request.params.get('data_url')
     return dict(data_url=data_url)
+
+@action('faq')
+@action.uses(db, auth, 'faq.html')
+def faq():
+    return dict()
+
