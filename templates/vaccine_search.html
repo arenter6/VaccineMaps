@@ -170,8 +170,9 @@
                             </div>
                             <div class="level-item">
                                 <span v-for="star_idx in [1, 2, 3, 4, 5]">
-                                  <i v-if="star_idx <= r.rating" class="fa fa-star fa-xs"></i>
-                                  <i v-if="star_idx > r.rating" class="fa fa-star-o fa-xs"></i>
+                                    <i v-if="star_idx <= r.rating" class="fa fa-star fa-xs"></i>
+                                    <i v-if="star_idx > Math.ceil(r.rating)" class="fa fa-star-o fa-xs"></i>
+                                    <i v-if="star_idx > Math.floor(r.rating) && star_idx <= Math.ceil(r.rating)" class="fa fa-star-half-alt fa-xs"></i>
                                 </span>
                             </div>
                         </div>

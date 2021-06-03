@@ -8,8 +8,6 @@
   <link rel="shortcut icon"
     href="data:image/x-icon;base64,AAABAAEAAQEAAAEAIAAwAAAAFgAAACgAAAABAAAAAgAAAAEAIAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAPAAAAAA==" />
   <link rel="stylesheet" href="css/bulma.css">
-  <!-- apps/vaccineNavigator/css/mystyle.css -->
-  <!-- <link rel="stylesheet" href="css/mystyle.scss"> -->
   <link rel="stylesheet" href="font-awesome-4.7.0/css/font-awesome.css">
   [[block page_head]]
   <!-- individual pages can customize header here -->[[end]]
@@ -17,45 +15,32 @@
 
 <body>
   <!-- header -->
-  <section class="hero is-headercolor is-small">
-    <div class="hero-body has-text-centered">
+  <section class="hero is-light is-small">
+    <div class="hero-body is-mobile">
       <!--centered container-->
       <div class="container is-max-widescreen is-centered">
-        <!-- <h1 class="title">TEXT</h1> -->
-        <!-- <img src="../static/logoplaceholder.png"> -->
-
-        <div class="columns is-vcentered">
-
-          <div class="column is-one-third">
-            <div class="columns">
-              <div class="column is-3">
-                <img src="../static/vaccine_maps_logo.png" width="100%" height="100%" >
-              </div>
-              <div class="column is-9 my-2">
-                <a class="navbar-item" href="[[=URL('index')]]"><h1 class="title">Vaccine Maps</h1></a>
-              </div>
+          <nav class="navbar" role="navigation" aria-label="main navigation">
+            <div class="navbar-brand">
+              <a class="navbar-item" href="[[=URL('index')]]">
+                <img src="../static/vaccine_maps_logo.png" width="100%" height="100%">
+              </a>
             </div>
-          </div>
-          <div class="colum is-two-thirds">
-            <div class="column">
+            <div class="navbar-menu is-active">
               <nav class="navbar-end" role="navigation" aria-label="main navigation">
-          
                 <a class="navbar-item" href="[[=URL('vaccine_search')]]">
                   <span class="icon-text">
                     <span class="icon">
                       <i class="fas fa-syringe"></i>
                     </span>
-                    <span>Book an Appointment</span>
+                  <span>Book an Appointment</span>
                   </span>
                 </a>
                 <div class="navbar-item has-dropdown is-hoverable">
-                  <a class="navbar-link">
-                    Reviews
-                  </a>
+                  <a class="navbar-link">Reviews</a>
                   <div class="navbar-dropdown">
                     <a href="[[=URL('experience')]]" class="navbar-item">Leave a Review</a>
                     <a href="[[=URL('view_reviews')]]" class="navbar-item">View Reviews</a>
-                    <a href="[[=URL('test_data')]]" class="navbar-item">Data Visualization</a>
+                    <a href="[[=URL('data')]]" class="navbar-item">Data Visualization</a>
                   </div>
                 </div>
                 <div class="navbar-item has-dropdown is-hoverable">
@@ -65,34 +50,31 @@
                   <div class="navbar-dropdown">
                     <a href="" class="navbar-item">FAQ</a>
                     <a href="[[=URL('about_us')]]" class="navbar-item">About Us</a>
+                    <a href="[[=URL('faq')]]" class="navbar-item">FAQ</a>
+                    <a href="" class="navbar-item">About Us</a>
                   </div>
                 </div>
-          
+
+                [[if globals().get('user'):]]
+                <div class="navbar-item has-dropdown is-hoverable">
+                  <a class="navbar-link is-primary">
+                    [[=globals().get('user').get('email')]]
+                  </a>
+                  <div class="navbar-dropdown">
+                    <a class="navbar-item" href="[[=URL('auth/logout')]]">Logout</a>
+
+                  </div>
+                </div>
+                [[else:]]
                 <div class="buttons">
-                  [[if globals().get('user'):]]
-                  <div class="navbar-item has-dropdown is-hoverable">
-                    <a class="navbar-link is-primary">
-                      [[=globals().get('user').get('email')]]
-                    </a>
-                    <div class="navbar-dropdown">
-                      <a class="navbar-item" href="[[=URL('auth/logout')]]">Logout</a>
-                      <a class="navbar-item" href="[[=URL('auth/profile')]]">Profile</a>
-                      <a class="navbar-item" href="[[=URL('auth/change_password')]]">Change Password</a></li>
-          
-                    </div>
-                  </div>
-                  [[else:]]
-                  <a class="button is-light" href="[[=URL('auth/register')]]">Sign up</a>
-                  <a class="button is-info" href="[[=URL('auth/login')]]">Log in</a>
-                  [[pass]]
+                  <!-- FOR DEVELOPMENT MODE: next='../index' was working fine -->
+                  <a class="button is-info" href="[[=URL('auth/plugin/oauth2google/login', vars=dict(next='../../../index'))]]">Login</a>
                 </div>
+                [[pass]]
               </nav>
             </div>
-          
-          </div>
-
+          </nav>
         </div>
-      </div>
     </div>
   </section>
 
@@ -104,23 +86,31 @@
 
   <!--Start footer content-->
   <div class="flex-wrapper">
-
     <footer class="footer has-background-headercolor">
-      <div class="container is-centered is-max-widescreen">
-        <div class="columns">
+      <div class="container has-text-centered is-max-widescreen">
+        <div class="block">
+          <h2 class="subtitle">About Vaccine Maps</h2>
+          Vaccine Maps is first and foremost an ergonomic website which locates the nearest available vaccines to users and to share
+          first-hand reviews provided by users upon getting vaccinated with others who are looking to get vaccinated. We also aim to provide accurate information
+          to those who are vaccine hesitant.
+        </div>
+        <div class="columns is-mobile is-vcentered">
           <div class="column">
-            <h2 class="subtitle">About</h2>
-            Text here column 1.Text here column 1.Text here column 1.Text here column 1.
-            Text here column 1.Text here column 1.Text here column 1.Text here column 1.
+            <p>
+               © 2021 Vaccine Maps. Powered by <a href="https://github.com/web2py/py4web">Py4Web</a>. All Rights Reserved.
+            </p>
           </div>
           <div class="column">
-            <h2 class="subtitle">Links</h2>
-            Text here in column 2. Maybe add an about us.Text here in column 2. Maybe add an about us.
-            Text here in column 2. Maybe add an about us.Text here in column 2. Maybe add an about us.
+            <a href="[[=URL('about_us')]]">Meet the Team</a>
           </div>
           <div class="column">
-            <h2 class="subtitle">Info</h2>
-            Column 3. Maybe some more information goes here. Anything goes.
+            <img src="../static/vaccine_maps_logo.png" width="100px" height="100px">
+          </div>
+          <div class="column">
+            <a href="[[=URL('faq')]]">FAQ</a>
+          </div>
+          <div class="column">
+            <a href="https://www.termsfeed.com/live/0f06ddb7-ad20-4ab7-9b35-f87a59dff9bf" target="_blank">Privacy Policy</a>
           </div>
         </div>
       </div>
