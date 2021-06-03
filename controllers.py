@@ -282,7 +282,7 @@ def load_ratings():
 #######Test data charts
 @action('data')
 @action.uses(db, session, auth, 'data.html')
-def test_data():
+def data():
     vaccines = ['Pfizer-BioNTech', 'Johnson & Johnson', 'Moderna']
     for i in range (0, 3):
         # print(i)
