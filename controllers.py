@@ -307,7 +307,7 @@ def writeCsvFile(vaccine_type):
     print(bList)
     hList.sort()
     # print(pList)
-    dataUrl = "apps/room12/static/"
+    dataUrl = "/static/"
     histogramPath = dataUrl + vaccine_type + "_data.csv"
     boxplotPath = dataUrl + "boxplot_data.csv"
     # print(dataPath)
