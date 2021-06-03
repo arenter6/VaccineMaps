@@ -33,6 +33,7 @@ from .models import get_user_email, us_states, get_time
 from py4web.utils.form import Form, FormStyleBulma
 from pydal.validators import *
 from .settings_private import *
+import csv, os, sys
 
 url_signer = URLSigner(session)
 vaccines = {
@@ -363,14 +364,63 @@ def load_reviews():
 
 
 #######Test data charts
-@action('test_data')
-@action.uses(db, session, auth, 'test_data.html')
+@action('data')
+@action.uses(db, session, auth, 'data.html')
 def test_data():
-    return dict(USER_ID=USER_ID,
-                load_reviews_url=URL('load_reviews', signer=url_signer),
-           )
+    vaccines = ['Pfizer-BioNTech', 'Johnson & Johnson', 'Moderna']
+    for i in range (0, 3):
+        # print(i)
+        writeCsvFile(vaccines[i])
+    reviewAvgs = getAvgs(vaccines)
+    totalReviews = db(db.review).count()
+    return dict(USER_ID=USER_ID, get_data_url = URL('get_data'), vaccines = vaccines, 
+    reviewAvgs = reviewAvgs, totalReviews = totalReviews)
 
-@action('get_data_url')
+def writeCsvFile(vaccine_type):
+    hRows = db(db.review.vaccine_type == vaccine_type).select()
+    bRows = db(db.review).select()
+    hList = []
+    bList = []
+    hFields = ["rating"]
+    bFields = ["vaccine_type,rating"]
+    for row in hRows:
+        hList.append(row["rating"])
+    for row in bRows:
+        print(row)
+        bList.append(row["vaccine_type"] + "," + row["rating"])
+    print(bList)
+    hList.sort()
+    # print(pList)
+    dataUrl = "apps/room12/static/"
+    histogramPath = dataUrl + vaccine_type + "_data.csv"
+    boxplotPath = dataUrl + "boxplot_data.csv"
+    # print(dataPath)
+    with open(histogramPath, 'w') as csvfile:
+        csvwriter = csv.writer(csvfile, lineterminator='\n', delimiter = '\n')
+        csvwriter.writerow(hFields)
+        csvwriter.writerow(hList)
+    with open(boxplotPath, 'w') as csvfile:
+        csvwriter = csv.writer(csvfile, lineterminator='\n', delimiter = '\n')
+        csvwriter.writerow(bFields)
+        csvwriter.writerow(bList)
+    return ()
+
+def getAvgs(vaccines):
+    reviewAvgs = []
+    tempAvg = 0
+    for i in range(len(vaccines)):
+        newList = []
+        rows = db(db.review.vaccine_type == vaccines[i]).select().as_list()
+        for row in rows:
+            newList.append(int(row["rating"]))
+        if (len(newList) == 0):
+            tempAvg = 0
+        else:
+            tempAvg = sum(newList) / len(newList)
+        reviewAvgs.append(tempAvg)
+    return(reviewAvgs)
+
+@action('get_data')
 @action.uses(db, session, auth)
 def get_data():
     data_url = request.params.get('data_url')

@@ -1,0 +1,318 @@
+[[extend 'layout.html']]
+<style>
+    [v-cloak] {
+        display: none;
+    }
+
+    #histogram {
+        display: inline-block;
+    }
+</style>
+<script src='https://d3js.org/d3.v4.min.js'></script>
+
+<div class="section" content="is-centered" id="vue-target" v-cloak>
+
+    <div class="content">
+        <pre
+            class="tab1"><h1><span class="icon is-small"><i class="fa fa-bar-chart" aria-hidden="true"></i></span>  Data</h1></pre>
+
+    </div>
+    <div class="tabs is-centered is-boxed is-medium">
+        <ul>
+            <li>
+                <a>
+                    <span class="icon is-small" @click="set_show_stats(true)"><i class="fa fa-ellipsis-h"
+                            aria-hidden="true"></i><span>Statistics</span></span>
+                </a>
+            </li>
+        </ul>
+    </div>
+    <div v-if="show_stats">
+        <div class="content">
+            <!-- <table class="table is-hoverable"> -->
+            <!-- <thead>Vaccination facts</thead>
+                <tbody>
+                    <tr>
+                        <th>Total vaccinations (U.S)</th>
+                        <td>Male: 2</td>
+                        <td>Female: 2</td>
+
+                    </tr>
+                    <tr>
+                        <th>Total Reviews</th>
+                        <td>2</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th>Moderna</th>
+                        <td>2</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th>Pfizer</th>
+                        <td>2</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th>Johnson & Johnson</th>
+                        <td>2</td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table> -->
+            <table class="table is-hoverable">
+                <thead></thead>
+                <tbody>
+                    <tr>
+                        <th>Total Reviews</th>
+                        <td>[[=totalReviews]]</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th>Review averages</th>
+                        <td> </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <td>Pfizer-BioNTech</td>
+                        <td>[[=reviewAvgs[0] ]]</td>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <td>Johnson & Johnson</td>
+                        <td>[[=reviewAvgs[1] ]]</td>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <td>Moderna</td>
+                        <td>[[=reviewAvgs[2] ]]</td>
+                    </tr>
+                </tbody>
+            </table>
+            <button class="button" @click="set_show_stats(false)">Close</button>
+        </div>
+    </div>
+</div>
+
+<div class="section">
+
+    <div class="content">
+        <h3>Histogram</h3>
+        <p>View how different vaccinations have been rated by our users</p>
+        <div id="histogram" style="width:auto"></div>
+        <input type="radio" onclick="updateFile('Pfizer-BioNTech_data.csv')" name="file" id="updatefile" checked
+            label="pfizer-biontech">
+        Pfizer-BioNTech
+        <input type="radio" onclick="updateFile('Moderna_data.csv')" name="file" id="updatefile" label="Moderna">
+        Moderna
+        <input type="radio" onclick="updateFile('Johnson & Johnson_data.csv')" name="file" id="updatefile"
+            label="pfizer-biontech">
+        Johnson & Johnson
+        <div class="tabs is-centered is-boxed is-medium">
+            <ul></ul>
+        </div>
+        <h3>Boxplot</h3>
+        <div id="boxplot"></div>
+    </div>
+</div>
+</div>
+
+<script>
+    graphColor = "#89cff0";
+    // begin histogram code
+    // set the dimensions and margins of the graph
+    var margin = { top: 20, right: 30, bottom: 40, left: 40 },
+        width = 460 - margin.left - margin.right,
+        height = 400 - margin.top - margin.bottom;
+
+    // append the svg object to the body of the page
+    var svg = d3.select("#histogram")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform",
+            "translate(" + margin.left + "," + margin.top + ")");
+    var nBin = 5;
+    // create x axis
+    // var x = d3.scaleBand()
+    //     .domain([1, 2, 3, 4, 5])
+    var x = d3.scaleBand()
+        .domain([1, 2, 3, 4, 5])
+        .range([0, width]);
+    svg.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x));
+
+    // create y axis
+    var y = d3.scaleLinear()
+        .range([height, 0]);
+    var yAxis = svg.append("g")
+    // appends x label
+    svg.append("text")
+        .attr("transform",
+            "translate(" + (width / 2) + " ," +
+            (height + margin.top + 10) + ")")
+        .style("text-anchor", "middle")
+        .text("Rating");
+
+    //appens y label
+    svg.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 0 - margin.left)
+        .attr("x", 0 - (height / 2))
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .text("Count");
+
+    // get the data, call function to change file
+    function updateFile(fileName) {
+        d3.csv(fileName, function (data) {
+            //use if we want dynamic bins
+            // function update(nBin) {
+            var histogram = d3.histogram()
+                .value(function (d) { return d.rating; })   // I need to give the vector of value
+                .domain([1, 6])
+                .thresholds(5);
+
+            var bins = histogram(data);
+
+            // update y axis
+            y.domain([0, d3.max(bins, function (d) { return d.length; })]);
+            yAxis
+                .transition()
+                .duration(200)
+                .call(d3.axisLeft(y));
+
+            var u = svg.selectAll("rect")
+                .data(bins)
+
+            u
+                .enter()
+                .append("rect") // Add a new rect for each new elements
+                .merge(u) // merge existing
+                .transition()
+                .duration(800)
+                .attr("x", 1)
+                .attr("transform", function (d) { return "translate(" + x(d.x0) + "," + y(d.length) + ")"; })
+                // .attr("width", function (d) { return x(d.x1) - x(d.x0) - 1; })
+                // .attr("width", function (d) { return x.bandwidth(); })
+                .attr("width", function (d) { return (width - 20) / 5; })
+                .attr("height", function (d) { return height - y(d.length); })
+                .style("fill", graphColor)
+
+            // remove old bars if necessary
+            u
+                .exit()
+                .remove()
+        });
+        d3.select("#updatefile").on("click", function () {
+            updateFile(+this.value);
+        });
+    }
+    updateFile('Pfizer-BioNTech_data.csv')
+    // end histogram code
+
+    //start boxplot
+    var svg2 = d3.select("#boxplot")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform",
+            "translate(" + margin.left + "," + margin.top + ")");
+
+    d3.csv("boxplot_data.csv", function (data) {
+
+        // Compute quartiles, median, inter quantile range min and max 
+        var sumstat = d3.nest()
+            .key(function (d) { return d.vaccine_type; })
+            .rollup(function (d) {
+                q1 = d3.quantile(d.map(function (g) { return g.rating; }).sort(d3.ascending), .25)
+                median = d3.quantile(d.map(function (g) { return g.rating; }).sort(d3.ascending), .5)
+                q3 = d3.quantile(d.map(function (g) { return g.rating; }).sort(d3.ascending), .75)
+                interQuartile = q3 - q1
+                min = q1 - 1.5 * interQuartile
+                max = q3 + 1.5 * interQuartile
+                // console.log(d, max)
+                return ({ q1: q1, median: median, q3: q3, interQuartile: interQuartile, min: min, max: max })
+            })
+            .entries(data)
+
+
+        var xvar = d3.scaleBand()
+            .range([0, width])
+            .domain(["Johnson & Johnson", "Moderna", "Pfizer-BioNTech"])
+            .paddingInner(1)
+            .paddingOuter(.5)
+        svg2.append("g")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.axisBottom(xvar))
+
+        var yvar = d3.scaleLinear()
+            .domain([0, 7])
+            .range([height, 0])
+        svg2.append("g").call(d3.axisLeft(yvar))
+
+        // create vertical line
+        svg2
+            .selectAll("vertLines")
+            .data(sumstat)
+            .enter()
+            .append("line")
+            .attr("x1", function (d) { return (xvar(d.key)) })
+            .attr("x2", function (d) { return (xvar(d.key)) })
+            .attr("y1", function (d) {
+                return (yvar(d.value.min))
+            })
+            .attr("y2", function (d) { return (yvar(d.value.max)) })
+            .attr("stroke", "black")
+            .style("width", 40)
+
+        // rectangle for the main box
+        var boxWidth = 100
+        svg2
+            .selectAll("boxes")
+            .data(sumstat)
+            .enter()
+            .append("rect")
+            .attr("x", function (d) { return (xvar(d.key) - boxWidth / 2) })
+            .attr("y", function (d) { return (yvar(d.value.q3)) })
+            .attr("height", function (d) { return (yvar(d.value.q1) - yvar(d.value.q3)) })
+            .attr("width", boxWidth)
+            .attr("stroke", "black")
+            .style("fill", graphColor)
+        //x axis label
+        svg2.append("text")
+        .attr("transform",
+            "translate(" + (width / 2) + " ," +
+            (height + margin.top + 15) + ")")
+        .style("text-anchor", "middle")
+        .text("Vaccine type");
+        // Show the median
+        svg2
+            .selectAll("medianLines")
+            .data(sumstat)
+            .enter()
+            .append("line")
+            .attr("x1", function (d) { return (xvar(d.key) - boxWidth / 2) })
+            .attr("x2", function (d) { return (xvar(d.key) + boxWidth / 2) })
+            .attr("y1", function (d) { return (yvar(d.value.median)) })
+            .attr("y2", function (d) { return (yvar(d.value.median)) })
+            //draw whiskers at ends
+            // .attr("x0", function (d) { return (yvar(d.value.min)) })
+            // .attr("x1", function (d) { return (yvar(d.value.max)) })
+            .attr("stroke", "black")
+            .style("width", 80)
+    })
+//end boxplot
+</script>
+
+[[block page_scripts]]
+<!-- Loads the index-specific js for Vue -->
+<script>
+    let get_data_url = "[[=XML(get_data_url)]]";
+</script>
+<script src="js/data.js"></script>
+[[end]]
