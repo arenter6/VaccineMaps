@@ -33,6 +33,7 @@ from .models import get_user_email, us_states, get_time
 from py4web.utils.form import Form, FormStyleBulma
 from pydal.validators import *
 from .private.settings_private import *
+import csv, os, sys
 
 url_signer = URLSigner(session)
 vaccines = {
@@ -40,13 +41,6 @@ vaccines = {
         'Moderna': 'Moderna',
         'Johnson & Johnson': 'Johnson & Johnson'
 }
-
-experience_fields = [Field('vaccine_type', requires=IS_IN_SET(vaccines), error_message=T("Please choose from the list above.")),
-                     Field('rating', requires=IS_INT_IN_RANGE(0, 6), error_message=T("Please enter a rating between 0 and 5.")),
-                     Field('site_address', requires=IS_NOT_EMPTY(), error_message=T("Please enter a valid location.")),
-                     Field('city', requires=IS_NOT_EMPTY(), error_message=T("Please enter a valid city.")),
-                     Field('state', requires=IS_IN_SET(us_states), error_message=T("Please select a valid state.")),
-                     Field('feedback', type='string')]
 
 @action('index')
 @action.uses(db, auth, 'index.html')
