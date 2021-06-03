@@ -136,6 +136,8 @@
             "translate(" + margin.left + "," + margin.top + ")");
     var nBin = 5;
     // create x axis
+    // var x = d3.scaleBand()
+    //     .domain([1, 2, 3, 4, 5])
     var x = d3.scaleBand()
         .domain([1, 2, 3, 4, 5])
         .range([0, width]);
@@ -171,8 +173,8 @@
             // function update(nBin) {
             var histogram = d3.histogram()
                 .value(function (d) { return d.rating; })   // I need to give the vector of value
-                .domain([1, 5])
-                .thresholds(nBin);
+                .domain([1, 6])
+                .thresholds(5);
 
             var bins = histogram(data);
 
@@ -195,6 +197,7 @@
                 .attr("x", 1)
                 .attr("transform", function (d) { return "translate(" + x(d.x0) + "," + y(d.length) + ")"; })
                 // .attr("width", function (d) { return x(d.x1) - x(d.x0) - 1; })
+                // .attr("width", function (d) { return x.bandwidth(); })
                 .attr("width", function (d) { return (width - 20) / 5; })
                 .attr("height", function (d) { return height - y(d.length); })
                 .style("fill", graphColor)
