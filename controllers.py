@@ -323,3 +323,9 @@ def test_data():
 def get_data():
     data_url = request.params.get('data_url')
     return dict(data_url=data_url)
+
+#About Us Redirect
+@action('about_us')
+@action.uses(db, session, auth, 'about_us.html')
+def about_us():
+    return dict()
