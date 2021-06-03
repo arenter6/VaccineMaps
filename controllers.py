@@ -284,24 +284,6 @@ def load_ratings():
 
     return dict(ratings=ratings_json)
 
-#######Test data
-@action('load_reviews')
-@action.uses(url_signer.verify(), db, auth)
-def load_reviews():
-    reviews = db(db.review).select().as_list()
-    reviews_json = []
-    for row in reviews: #Everytime we load ratings, calculate new average and set addresses to lower case
-        #change to use reviews rather than sites
-        rating_dict = {
-            'rating': int(row["rating"]),
-            'vaccine_type': row["vaccine_type"],
-        }
-        reviews_json.append(rating_dict)
-    print(reviews_json)
-
-    return dict(ratings=reviews_json)
-
-
 #######Test data charts
 @action('data')
 @action.uses(db, session, auth, 'data.html')
