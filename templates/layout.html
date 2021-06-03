@@ -63,7 +63,7 @@
                     About
                   </a>
                   <div class="navbar-dropdown">
-                    <a href="" class="navbar-item">FAQ</a>
+                    <a  href="[[=URL('faq')]]" class="navbar-item">FAQ</a>
                     <a href="" class="navbar-item">About Us</a>
                   </div>
                 </div>
@@ -76,14 +76,13 @@
                     </a>
                     <div class="navbar-dropdown">
                       <a class="navbar-item" href="[[=URL('auth/logout')]]">Logout</a>
-                      <a class="navbar-item" href="[[=URL('auth/profile')]]">Profile</a>
-                      <a class="navbar-item" href="[[=URL('auth/change_password')]]">Change Password</a></li>
           
                     </div>
                   </div>
                   [[else:]]
-                  <a class="button is-light" href="[[=URL('auth/register')]]">Sign up</a>
-                  <a class="button is-info" href="[[=URL('auth/login')]]">Log in</a>
+                  <!-- FOR DEVELOPMENT MODE: next='../index' was working fine -->
+                  <a class="button is-info" href="[[=URL('auth/plugin/oauth2google/login', vars=dict(next='../../../index'))]]">Login</a>
+
                   [[pass]]
                 </div>
               </nav>
