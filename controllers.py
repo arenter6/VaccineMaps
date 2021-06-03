@@ -247,8 +247,8 @@ def load_reviews():
 
 
 #######Test data charts
-@action('test_data')
-@action.uses(db, session, auth, 'test_data.html')
+@action('data')
+@action.uses(db, session, auth, 'data.html')
 def test_data():
     vaccines = ['Pfizer-BioNTech', 'Johnson & Johnson', 'Moderna']
     for i in range (0, 3):
@@ -292,20 +292,15 @@ def getAvgs(vaccines):
     reviewAvgs = []
     tempAvg = 0
     for i in range(len(vaccines)):
-        # print(i)
         newList = []
         rows = db(db.review.vaccine_type == vaccines[i]).select().as_list()
         for row in rows:
-            # tempList = []
-            # tempList.append(int(row["rating"]), )
             newList.append(int(row["rating"]))
-        # print("newList", newList)
         if (len(newList) == 0):
             tempAvg = 0
         else:
             tempAvg = sum(newList) / len(newList)
         reviewAvgs.append(tempAvg)
-        # print(vaccines[i], tempAvg)
     return(reviewAvgs)
 
 @action('get_data')
