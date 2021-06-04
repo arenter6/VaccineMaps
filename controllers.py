@@ -307,9 +307,12 @@ def writeCsvFile(vaccine_type):
     hList.sort()
     # print(pList)
     dataUrl = os.path.join(APP_FOLDER, "static")
-    histogramPath = dataUrl + "\\" + vaccine_type + "_data.csv"
-    boxplotPath = dataUrl + "\\" + "boxplot_data.csv"
-    #print(boxplotPath)
+    if os.environ.get("GAE_ENV"):
+        histogramPath = dataUrl + "/" + vaccine_type + "_data.csv"
+        boxplotPath = dataUrl + "/" + "boxplot_data.csv"
+    else:
+        histogramPath = dataUrl + "\\" + vaccine_type + "_data.csv"
+        boxplotPath = dataUrl + "\\" + "boxplot_data.csv"
     with open(histogramPath, 'w') as csvfile:
         csvwriter = csv.writer(csvfile, lineterminator='\n', delimiter = '\n')
         csvwriter.writerow(hFields)
