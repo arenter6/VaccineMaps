@@ -1,4 +1,8 @@
 [[extend 'layout.html']]
+
+[[block page_head]]
+<meta name="viewport" content="width=device-width, initial-scale=1 maximum-scale=1.0, user-scalable=no">
+[[end]]
 <style>
     .card { transition: all .2s ease-in-out; }
     .card:hover { transform: scale(1.1); }
@@ -16,8 +20,8 @@
         </div>
         <h1 class="title is-4">Meet the Team</h1>
         <div class="block">
-            <div class="columns is-mobile is-centered">
-                <div class="column has-text-centered" style="font-size: 22px;">
+            <div class="columns is-centered">
+                <div class="column has-text-centered style="font-size: 22px;">
                     <div class="card">
                         <div class="card-image">
                             <figure class="image is-1by1">
