@@ -301,15 +301,15 @@ def writeCsvFile(vaccine_type):
     for row in hRows:
         hList.append(row["rating"])
     for row in bRows:
-        print(row)
+        #print(row)
         bList.append(row["vaccine_type"] + "," + str(row["rating"]))
     #print(bList)
     hList.sort()
     # print(pList)
     dataUrl = os.path.join(APP_FOLDER, "static")
-    histogramPath = dataUrl + vaccine_type + "_data.csv"
-    boxplotPath = dataUrl + "boxplot_data.csv"
-    # print(dataPath)
+    histogramPath = dataUrl + "\\" + vaccine_type + "_data.csv"
+    boxplotPath = dataUrl + "\\" + "boxplot_data.csv"
+    #print(boxplotPath)
     with open(histogramPath, 'w') as csvfile:
         csvwriter = csv.writer(csvfile, lineterminator='\n', delimiter = '\n')
         csvwriter.writerow(hFields)
