@@ -30,10 +30,9 @@ from yatl.helpers import A
 from . common import db, session, T, cache, auth
 from py4web.utils.url_signer import URLSigner
 from .models import get_user_email, us_states, get_time
-from py4web.utils.form import Form, FormStyleBulma
-from pydal.validators import *
 from .private.settings_private import *
 import csv, os, sys
+from .settings import APP_FOLDER
 
 url_signer = URLSigner(session)
 vaccines = {
@@ -303,11 +302,11 @@ def writeCsvFile(vaccine_type):
         hList.append(row["rating"])
     for row in bRows:
         print(row)
-        bList.append(row["vaccine_type"] + "," + row["rating"])
-    print(bList)
+        bList.append(row["vaccine_type"] + "," + str(row["rating"]))
+    #print(bList)
     hList.sort()
     # print(pList)
-    dataUrl = "/static/"
+    dataUrl = os.path.join(APP_FOLDER, "static")
     histogramPath = dataUrl + vaccine_type + "_data.csv"
     boxplotPath = dataUrl + "boxplot_data.csv"
     # print(dataPath)
