@@ -22,15 +22,15 @@
           <nav class="navbar" role="navigation" aria-label="main navigation">
             <div class="navbar-brand">
               <a class="navbar-item" href="[[=URL('index')]]">
-                <img src="../static/vaccine_maps_logo.png" width="150x" height="200px">
+                <img src="../static/vaccine_maps_logo.png" width="174" height="28">
               </a>
-              <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+              <a role="button" class="navbar-burger" @click="isOpen = !isOpen" aria-label="menu" aria-expanded="false" v-bind:class="{'is-active': isOpen}">
                 <span aria-hidden="true"></span>
                 <span aria-hidden="true"></span>
                 <span aria-hidden="true"></span>
               </a>
             </div>
-            <div class="navbar-menu is-active">
+            <div class="navbar-menu" v-bind:class="{'is-active': isOpen}">
               <nav class="navbar-end" role="navigation" aria-label="main navigation">
                 <a class="navbar-item" href="[[=URL('vaccine_search')]]">
                   <span class="icon-text">
@@ -53,10 +53,8 @@
                     About
                   </a>
                   <div class="navbar-dropdown">
-                    <a href="" class="navbar-item">FAQ</a>
                     <a href="[[=URL('about_us')]]" class="navbar-item">About Us</a>
                     <a href="[[=URL('faq')]]" class="navbar-item">FAQ</a>
-                    <a href="" class="navbar-item">About Us</a>
                   </div>
                 </div>
 
@@ -99,6 +97,7 @@
           first-hand reviews provided by users upon getting vaccinated with others who are looking to get vaccinated. We also aim to provide accurate information
           to those who are vaccine hesitant.
         </div>
+        <hr style="color:black;background-color:gray">
         <div class="columns is-mobile is-vcentered">
           <div class="column">
             <p>
@@ -127,8 +126,19 @@
 <script src="js/axios.min.js"></script>
 <script src="js/vue.js"></script>
 <script src="js/utils.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="https://kit.fontawesome.com/63140bd432.js" crossorigin="anonymous"></script>
+
 [[block page_scripts]]
 <!-- individual pages can add scripts here -->[[end]]
-
+  <script>
+    $(document).ready(function() {
+      // Check for click events on the navbar burger icon
+      $(".navbar-burger").click(function() {
+        // Toggle the "is-active" class on both the "navbar-burger" and the "navbar-menu"
+        $(".navbar-burger").toggleClass("is-active");
+        $(".navbar-menu").toggleClass("is-active");
+      });
+    });
+  </script>
 </html>

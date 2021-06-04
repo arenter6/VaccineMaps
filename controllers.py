@@ -55,13 +55,11 @@ def index():
 def experience():
     user = auth.get_user()
     if user.get('email') is not None:
-        print("User:" + user.get('email') + " logged in on Experience")
         review_info = db(db.review.users_id == user.get('id')).select().as_list()
         review_info.sort(key=lambda x: x["vaccinated_date"]) #Returns current users vaccinations by increasing date
         can_review = True if len(review_info) < 2 else False
         return dict(logged_in=1, user=user, review_info=review_info, url_signer=url_signer, can_review=can_review)
     else:
-        print("User: Not logged in on Experience")
         return dict(logged_in=0, can_review=False)
 
 @action('submit_review', method=['GET', 'POST'])
@@ -82,8 +80,6 @@ def submit_form():
 
     ##Check to see reviews are less than two
     site = db((db.site.address == request.json.get('site_address')) & (db.site.city == request.json.get('city'))).select().first()
-    print("Site: ")
-    print(site)
     if site is not None: #increment raters and total rating if site already in db
         print("Updating a site")
         db((db.site.address == request.json.get('site_address')) & (db.site.city == request.json.get('city'))).update(
