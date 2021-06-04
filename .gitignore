@@ -1,6 +1,6 @@
 *.pyc
+*.csv
 __pycache__/*
 databases/*
 private/*
 settings_private.py*
-*.csv

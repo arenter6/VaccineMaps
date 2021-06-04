@@ -1,7 +1,12 @@
 [[extend 'layout.html']]
+<style>
+    .card { transition: all .2s ease-in-out; }
+    .card:hover { transform: scale(1.1); }
+</style>
+
 
 <div class="section">
-    <div class="container is-centered is is-max-widescreen">
+    <div class="container is-centered is-max-widescreen">
         <h1 class="title">About Us</h1>
         <div class="block">
             As we reach the end of the pandemic, it is important for every person to
@@ -11,32 +16,90 @@
         </div>
         <h1 class="title is-4">Meet the Team</h1>
         <div class="block">
-            <div class="columns is-mobile">
-                <div class="column" style="font-size: 24px;">
-                    <div class="panel is-link">
-                        <p class="panel-heading">David Pang</p>
+            <div class="columns is-mobile is-centered">
+                <div class="column has-text-centered" style="font-size: 22px;">
+                    <div class="card">
+                        <div class="card-image">
+                            <figure class="image is-1by1">
+                            <img src="../static/room12/leaked.jpg">
+                            </figure>
+                        </div>
+                        <div class="card-content">
+                            <div class="media">
+                                <div class="media-content">
+                                    <p class="title is-4">David Pang</p>
+                                    <p class="subtitle is-6"><a href="https://www.linkedin.com/in/realdavidpang/" target="_blank">@realdavidpang</a></p>
+                                </div>
+                            </div>
+                            <div class="content">
+                                Full stack developer of Vaccine Maps.<br>
+                                Here for a long time not a good time.
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="column" style="font-size: 24px;">
-                    <div class="panel is-link">
-                        <p class="panel-heading">Joey Barcia</p>
+                <div class="column has-text-centered"  style="font-size: 22px;">
+                    <div class="card">
+                        <div class="card-image">
+                            <figure class="image is-1by1">
+                            <img src="../static/room12/joey.jpg">
+                            </figure>
+                        </div>
+                        <div class="card-content">
+                            <div class="media">
+                                <div class="media-content">
+                                    <p class="title is-4">Joey Barcia</p>
+                                    <p class="subtitle is-6"><a href="https://www.linkedin.com/in/joey-barcia/" target="_blank">@joeybarcia</a></p>
+                                </div>
+                            </div>
+                            <div class="content">
+                                Full stack developer of Vaccine Maps.<br>
+                                Passionate about learning and problem solving.<br>
+                                Aspiring software engineer.
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="column" style="font-size: 24px;">
-                    <div class="panel is-link">
-                        <p class="panel-heading">Colin Xie</p>
-                    </div>
-                    <figure class="image is-1by1">
-                        <img src="../static/Colin_Xie.jpg">
-                    </figure>
-                    <div class="content">
-                        Full Stack developer and student in CSE183 Web Application<br>
-                        In training to become a full-time developer.
+                <div class="column has-text-centered" style="font-size: 22px;">
+                    <div class="card">
+                        <div class="card-image">
+                            <figure class="image is-1by1">
+                            <img src="../static/thumbnail.png">
+                            </figure>
+                        </div>
+                        <div class="card-content">
+                            <div class="media">
+                                <div class="media-content">
+                                    <p class="title is-4">Alfredo Renteria</p>
+                                    <p class="subtitle is-6"><a href="https://www.linkedin.com" target="_blank">@url</a></p>
+                                </div>
+                            </div>
+                            <div class="content">
+                                content.<br>
+                                
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="column" style="font-size: 24px;">
-                    <div class="panel is-link">
-                        <p class="panel-heading">Alfredo Renteria</p>
+                <div class="column has-text-centered" style="font-size: 22px;">
+                    <div class="card">
+                        <div class="card-image">
+                            <figure class="image is-1by1">
+                                <img src="../static/Colin_Xie.jpg">
+                            </figure>
+                        </div>
+                        <div class="card-content">
+                            <div class="media">
+                                <div class="media-content">
+                                    <p class="title is-4">Colin Xie</p>
+                                    <p class="subtitle is-6"><a href="https://www.linkedin.com" target="_blank">@url</a></p>
+                                </div>
+                            </div>
+                            <div class="content">
+                                Full Stack developer and student in CSE183 Web Application<br>
+                                In training to become a full-time developer.
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

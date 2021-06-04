@@ -19,60 +19,64 @@
     <div class="hero-body is-mobile">
       <!--centered container-->
       <div class="container is-max-widescreen is-centered">
-          <nav class="navbar" role="navigation" aria-label="main navigation">
-            <div class="navbar-brand">
-              <a class="navbar-item" href="[[=URL('index')]]">
-                <img src="../static/vaccine_maps_logo.png" width="100%" height="100%">
-              </a>
-            </div>
-            <div class="navbar-menu is-active">
-              <nav class="navbar-end" role="navigation" aria-label="main navigation">
-                <a class="navbar-item" href="[[=URL('vaccine_search')]]">
-                  <span class="icon-text">
-                    <span class="icon">
-                      <i class="fas fa-syringe"></i>
-                    </span>
-                  <span>Book an Appointment</span>
+        <nav class="navbar" role="navigation" aria-label="main navigation">
+          <div class="navbar-brand">
+            <a class="navbar-item" href="[[=URL('index')]]">
+              <img src="../static/vaccine_maps_logo.png" width="174" height="28">
+            </a>
+            <a role="button" class="navbar-burger" @click="isOpen = !isOpen" aria-label="menu" aria-expanded="false" v-bind:class="{'is-active': isOpen}">
+              <span aria-hidden="true"></span>
+              <span aria-hidden="true"></span>
+              <span aria-hidden="true"></span>
+            </a>
+          </div>
+          <div class="navbar-menu" v-bind:class="{'is-active': isOpen}">
+            <nav class="navbar-end" role="navigation" aria-label="main navigation">
+              <a class="navbar-item" href="[[=URL('vaccine_search')]]">
+                <span class="icon-text">
+                  <span class="icon">
+                    <i class="fas fa-syringe"></i>
                   </span>
+                <span>Book an Appointment</span>
+                </span>
+              </a>
+              <div class="navbar-item has-dropdown is-hoverable">
+                <a class="navbar-link">Reviews</a>
+                <div class="navbar-dropdown">
+                  <a href="[[=URL('experience')]]" class="navbar-item">Leave a Review</a>
+                  <a href="[[=URL('view_reviews')]]" class="navbar-item">View Reviews</a>
+                  <a href="[[=URL('data')]]" class="navbar-item">Data Visualization</a>
+                </div>
+              </div>
+              <div class="navbar-item has-dropdown is-hoverable">
+                <a class="navbar-link">
+                  About
                 </a>
-                <div class="navbar-item has-dropdown is-hoverable">
-                  <a class="navbar-link">Reviews</a>
-                  <div class="navbar-dropdown">
-                    <a href="[[=URL('experience')]]" class="navbar-item">Leave a Review</a>
-                    <a href="[[=URL('view_reviews')]]" class="navbar-item">View Reviews</a>
-                    <a href="[[=URL('data')]]" class="navbar-item">Data Visualization</a>
-                  </div>
+                <div class="navbar-dropdown">
+                  <a href="[[=URL('about_us')]]" class="navbar-item">About Us</a>
+                  <a href="[[=URL('faq')]]" class="navbar-item">FAQ</a>
                 </div>
-                <div class="navbar-item has-dropdown is-hoverable">
-                  <a class="navbar-link">
-                    About
-                  </a>
-                  <div class="navbar-dropdown">
-                    <a href="[[=URL('about_us')]]" class="navbar-item">About Us</a>
-                    <a href="[[=URL('faq')]]" class="navbar-item">FAQ</a>
-                  </div>
-                </div>
+              </div>
 
-                [[if globals().get('user'):]]
-                <div class="navbar-item has-dropdown is-hoverable">
-                  <a class="navbar-link is-primary">
-                    [[=globals().get('user').get('email')]]
-                  </a>
-                  <div class="navbar-dropdown">
-                    <a class="navbar-item" href="[[=URL('auth/logout')]]">Logout</a>
-
-                  </div>
+              [[if globals().get('user'):]]
+              <div class="navbar-item has-dropdown is-hoverable">
+                <a class="navbar-link is-primary">
+                  [[=globals().get('user').get('email')]]
+                </a>
+                <div class="navbar-dropdown">
+                  <a class="navbar-item" href="[[=URL('auth/logout')]]">Logout</a>
                 </div>
-                [[else:]]
-                <div class="buttons">
-                  <!-- FOR DEVELOPMENT MODE: next='../index' was working fine -->
-                  <a class="button is-info" href="[[=URL('auth/plugin/oauth2google/login', vars=dict(next='../../../index'))]]">Login</a>
-                </div>
-                [[pass]]
-              </nav>
-            </div>
-          </nav>
-        </div>
+              </div>
+              [[else:]]
+              <div class="buttons">
+                <!-- FOR DEVELOPMENT MODE: next='../index' was working fine -->
+                <a class="button is-info" href="[[=URL('auth/plugin/oauth2google/login', vars=dict(next='../../../index'))]]">Login</a>
+              </div>
+              [[pass]]
+            </nav>
+          </div>
+        </nav>
+      </div>
     </div>
   </section>
 
@@ -92,6 +96,7 @@
           first-hand reviews provided by users upon getting vaccinated with others who are looking to get vaccinated. We also aim to provide accurate information
           to those who are vaccine hesitant.
         </div>
+        <hr style="color:black;background-color:gray">
         <div class="columns is-mobile is-vcentered">
           <div class="column">
             <p>
@@ -102,7 +107,7 @@
             <a href="[[=URL('about_us')]]">Meet the Team</a>
           </div>
           <div class="column">
-            <img src="../static/vaccine_maps_logo.png" width="100px" height="100px">
+            <img src="../static/vaccine_maps_logo_no_words.png" width="100px" height="100px">
           </div>
           <div class="column">
             <a href="[[=URL('faq')]]">FAQ</a>
@@ -120,8 +125,19 @@
 <script src="js/axios.min.js"></script>
 <script src="js/vue.js"></script>
 <script src="js/utils.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="https://kit.fontawesome.com/63140bd432.js" crossorigin="anonymous"></script>
+
 [[block page_scripts]]
 <!-- individual pages can add scripts here -->[[end]]
-
+  <script>
+    $(document).ready(function() {
+      // Check for click events on the navbar burger icon
+      $(".navbar-burger").click(function() {
+        // Toggle the "is-active" class on both the "navbar-burger" and the "navbar-menu"
+        $(".navbar-burger").toggleClass("is-active");
+        $(".navbar-menu").toggleClass("is-active");
+      });
+    });
+  </script>
 </html>

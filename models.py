@@ -20,10 +20,6 @@ VACCINES = {
 }
 
 
-#I have changed auth.py to take inputs of age and gender
-#Not ideal, gotta find where they call auth.html endpoint and form
-
-
 ##Table for reviews
 db.define_table(
     'review',
