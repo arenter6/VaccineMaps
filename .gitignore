@@ -4,3 +4,4 @@ __pycache__/*
 databases/*
 private/*
 settings_private.py*
+static/*.csv
