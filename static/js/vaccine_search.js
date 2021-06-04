@@ -1,23 +1,3 @@
-//TODO MAP optional
-    //Dynamic map scrolling that updates the pins and table near map center
-    //When click on a marker, it highlights its respective row on the table
-        //when click off, unhighlights
-    //Check to see if range is valid (0-100) also add slider (css sass)
-    //Slider
-
-
-//TODO Corner cases!!
-    //Make sure user cannot enter in non-US zipcode or non-US address
-        //check using API and validate
-    //Make sure range is non negative and zipcode is between 500 and 99500
-        //Make either an v-if statement or form validator
-
-//TODO code cleanup and comments
-
-//TODO implement stars for rating on map
-    //implement half stars for half ratings
-
-
 //Vue stuff here
 let app = {};
 
@@ -70,7 +50,6 @@ let init = (app) => {
 
     app.vaccine_types_to_layer = function(app_vacc_types, popup){
         vacc_types_arr = Object.keys(app_vacc_types);
-        //console.log('VACC_TYPES', vacc_types_arr);
         //If vaccine types arr holds keys
         if (vacc_types_arr.length > 0) {
             popup += "<h3 class='has-text-success-dark'>"; //Start sub-header
@@ -125,17 +104,14 @@ let init = (app) => {
                     let str = elem.id.split('.')[0];
                     if (str === 'place') {
                         app.city = elem.text;
-                        //console.log('Found City:', app.city);
                     } else if (str === 'region') { //And region holds state
                         app.state = elem.short_code.split('-')[1];
-                        //console.log('Found State:', app.state);
                     };
                 });
                 //Packaging VaccineSpotter API request using user U.S.-state 
                 let vacc_sites_by_state = "https://www.vaccinespotter.org/api/v0/states/";
                 let resp_type = ".json";
                 let vaccination_sites_request = vacc_sites_by_state.concat(app.state, resp_type);
-                //console.log("VACCINESPOTTER API REQ:", vaccination_sites_request);
                 //Fetch second API -- Vaccination Sites by State
                 return fetch(vaccination_sites_request);
             }).then(function (response) {
@@ -146,21 +122,16 @@ let init = (app) => {
                 }
             }).then(function (userData) {
                 console.log("USERDATA", userData);
-                //console.log("USERDATA TYPE", typeof userData);
                 app.user_data = userData;
 
                 //Here we adjust zoom levels based on the mile radius selected for search
                 if (app.vue.range.number === 1) {
-                    //console.log('range:', app.vue.range.number);
                     app.zoomLevel = 15;
                 } else if (app.vue.range.number === 5 || app.vue.range.number === 10) {
-                    //console.log('range:', app.vue.range.number);
                     app.zoomLevel = 12;
                 } else if (app.vue.range.number === 25) {
-                    //console.log('range:', app.vue.range.number);
                     app.zoomLevel = 10;
                 } else if (app.vue.range.number === 50) {
-                    //console.log('range:', app.vue.range.number);
                     app.zoomLevel = 9;
                 }
                 app.vue.center = [app.lati, app.long]; //Sets searched center and zoom for later reference with table
@@ -170,13 +141,11 @@ let init = (app) => {
                 var distance = app.vue.range.number * 1600; //Converts miles from range input to meters
                 app.distance = distance;
 
-                //console.log('LOAD_RATINGS:', load_ratings_url);
-
                 return axios.get(load_ratings_url, { params: { "state": app.state } });
 
             }).then(function (ratingsRequest) {
                 let ratingsData = ratingsRequest.data;
-                //console.log('ratingsData:', ratingsData);
+
                 app.vue.geoJson = L.geoJson(app.user_data, //From the json request, we parse information according to our needs and display onto the map
                     {
                         onEachFeature: function (feature, layer) { //For every location, we set the appropriate information to rows so html can iterate nicely
@@ -261,8 +230,6 @@ let init = (app) => {
 
                             //Since VaccineSpotterAPI is spotty on Costco & Safeway locations; vaccine supply is currently high; redirect users to book appt
                             if (feature.properties.provider_brand_name === 'Costco' || feature.properties.provider_brand_name === 'Safeway') {
-                                //console.log('Found a:', feature.properties.provider_brand_name);
-                                //console.log('Vaccines avail:', feature.properties.appointment_vaccine_types);
                                 feature.properties.appointments_available = true;
                                 if (feature.properties.appointment_vaccine_types === null) {
                                     console.log('Provider', feature.properties.provider_brand_name);
@@ -295,11 +262,9 @@ let init = (app) => {
                             }
                         }, // Sets icon for every location
                         filter: function (feature) { // Filters out locations that are not within distance
-                            //console.log('LIVE FROM FILTER! Here is feature:', feature);
 
                             //All vaccine type options selected -- Default
                             if ((app.vue.pfizer_selected) && (app.vue.moderna_selected) && (app.vue.jj_selected)) {
-                                //console.log('ALL WERE SELECTED!');
                                 if (L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long])) <= app.distance) {
                                     return true;
                                 } else {
@@ -320,17 +285,14 @@ let init = (app) => {
                                 console.log('ONLY PFIZER SELECTED');
                                 //If this location has contents for appointment vaccine types
                                 if ((typeof appointment_vacc_types === 'object') && (appointment_vacc_types !== null)) {
-                                    //console.log('IS AN OBJECT AND NOT NULL');
                                     //Assign array with object keys; i.e. 'unknown', 'pfizer', 'moderna', 'jj'
                                     var app_vacc_types_arr = Object.keys(appointment_vacc_types);
                                     //Return 'pfizer' and 'unknown' within range
                                     if (app_vacc_types_arr.some(pfizer) || app_vacc_types_arr.some(unknown_vacc)) {
-                                        //if (app_vacc_types_arr.some(pfizer)) {
                                         return (L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long])) <= app.distance);
                                     }
                                     //Else if, location contents null
                                 } else if ((typeof appointment_vacc_types === 'object') && (appointment_vacc_types === null)) {
-                                    //console.log('IS AN OBJECT AND NULL');
                                     //Return locations within range
                                     return (L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).distanceTo(L.latLng([app.lati, app.long])) <= app.distance);
                                 }
@@ -604,14 +566,12 @@ map.on('dblclick', function(e) {
     var coord = e.latlng;    
     let lati_str = coord.lat.toString(); //Make coordinates into string for request
     let long_str = coord.lng.toString();
-    
-    //console.log("You clicked the map at latitude: " + lati_str + " and longitude: " + long_str);
+
     //Package request again, this time specifying zipcode
     let gc_start = "https://api.mapbox.com/geocoding/v5/mapbox.places/";
     let gc_end = ".json?types=postcode&country=US&access_token=";
     let comma = ",";
     let reverse_geocoding_request = gc_start.concat(long_str, comma, lati_str, gc_end, api_key);
-    //console.log('reverse_geocoding req:', reverse_geocoding_request);
     fetch(reverse_geocoding_request).then(function (response) {
         if (response.ok) {
             return response.json();
@@ -621,10 +581,8 @@ map.on('dblclick', function(e) {
     }).then(function (result) {
         //Get zipcode from features
         app.vue.zipcode = result.features[0].text;
-        //app.checkGeoJSON();
         //Call search()
         app.search();
-        //console.log('ZIPCODE RETRIEVED:', app.vue.zipcode);
     })
 
 });
