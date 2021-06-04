@@ -276,7 +276,6 @@ def load_ratings():
             'city': row["city"].lower(),
         }
         ratings_json[row["address"].lower().rsplit(' ', 1)[0]] = rating_dict
-    print(ratings_json)
 
     return dict(ratings=ratings_json)
 
