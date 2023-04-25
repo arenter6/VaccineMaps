@@ -1,4 +1,4 @@
-# Room 12
+# Vaccine Maps
 
 An ergonomic site to help users find vaccination sites and leave thoughful reviews.
 
